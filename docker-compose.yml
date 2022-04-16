@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=deer_block
+    container_name: deer_block_postgres
+    restart: always
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    network_mode: bridge
+    container_name: deer_block_redis
+    restart: always
+  fsys:
+    image: 101.35.246.34/file_system/file_system-server:latest
+    ports:
+      - "12080:8088"
+    # 替换成线上生产
+    environment:
+      - POSTGRES_NAME=deer_block
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - OSS_ACCESS_KEY_ID=LTAI5tEqusWURSPxDZAWnhNZ
+      - OSS_ACCESS_KEY_SECRET=HRxY0tiNUCuQ553ku6Mxsma2ncdafn
+      - OSS_ENDPOINT=oss-cn-shanghai.aliyuncs.com
+      - OSS_BUCKET_NAME=papaw
+    container_name: file_system
+    command: /bin/bash -c "python3 /opt/deer_block/fsys/manage.py makemigrations && python3 /opt/deer_block/fsys/manage.py migrate && gunicorn -c /opt/deer_block/fsys/gunicorn.conf.py mimi.wsgi:application"
+    links:
+      - db
+      - redis
+    depends_on:
+      - db
+      - redis
+    restart: always
