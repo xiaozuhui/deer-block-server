@@ -21,7 +21,7 @@ services:
     container_name: deer_block_redis
     restart: always
   fsys:
-    image: 101.35.246.34/file_system/file_system-server:latest
+    image: 101.35.246.34/deer_block/deer-block-server:latest
     ports:
       - "12080:8088"
     # 替换成线上生产
@@ -34,7 +34,7 @@ services:
       - OSS_ENDPOINT=oss-cn-shanghai.aliyuncs.com
       - OSS_BUCKET_NAME=papaw
     container_name: file_system
-    command: /bin/bash -c "python3 /opt/deer_block/fsys/manage.py makemigrations && python3 /opt/deer_block/fsys/manage.py migrate && gunicorn -c /opt/deer_block/fsys/gunicorn.conf.py mimi.wsgi:application"
+    command: /bin/bash -c "python3 /opt/deer_block/manage.py makemigrations && python3 /opt/deer_block/manage.py migrate && gunicorn -c /opt/deer_block/gunicorn.conf.py mimi.wsgi:application"
     links:
       - db
       - redis

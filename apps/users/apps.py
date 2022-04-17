@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 
 
-class FileConfig(AppConfig):
+class UserConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'file_system'
+    name = 'apps.users'
+    verbose_name = "用户信息模块"

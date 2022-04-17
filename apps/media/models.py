@@ -1,21 +1,11 @@
-import uuid
 from django.db import models
-from django.db.models import TextChoices
+from apps.consts import FileType
 
 
-class FileType(TextChoices):
+class File(models.Model):
+    """文件类型
+    统一存于SSO中
     """
-    文件类型
-    """
-    NONE = "", "无类型"
-    VIDEO = "video", "视频"
-    IMAGE = "image", "图像"
-    FILE = "file", "文件"
-
-
-class Media(models.Model):
-    uuid = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(
         max_length=120, verbose_name="文件标题", blank=True, null=True)
     file_type = models.CharField(
@@ -41,7 +31,7 @@ class Media(models.Model):
     def save(self, *args, **kwargs):
         if not self.title:
             self.title = self.file.name
-        super(Media, self).save(*args, **kwargs)
+        super(File, self).save(*args, **kwargs)
 
     @property
     def file_url(self):
