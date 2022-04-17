@@ -6,7 +6,7 @@ LABEL version="v1"
 RUN  apt-get update --fix-missing
 RUN  apt-get upgrade -y
 # 安装 python3
-RUN  apt-get install -y python3 python-dev python3-pip libpq-dev gunicorn postgresql-client postgresql-client-binary
+RUN  apt-get install -y python3 python-dev python3-pip libpq-dev gunicorn postgresql-client
 RUN mkdir -p /opt/deer_block
 COPY . /opt/deer_block
 WORKDIR /opt/deer_block
