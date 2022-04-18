@@ -11,8 +11,6 @@ SECRET_KEY = 'django-insecure-#kyxtl177*d)kv^+2xi5w!e)m-6bm%jg#(me7_3lrzpnfd=uh3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# APPEND_SLASH = False  # 不需要最后加/
-
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
@@ -83,7 +81,7 @@ DATABASES = {
     #     'USER': os.environ.get("POSTGRES_USER"),
     #     'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
     #     'HOST': 'db',
-    #     'PORT': '5432',
+    #     'PORT': '15432',
     # },
 }
 
@@ -91,10 +89,9 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        # "LOCATION": "redis://192.168.0.112:6379/0",
         "LOCATION": "redis://127.0.0.1:6379/0",
         # 'CONFIG': {
-        #     "hosts": [('redis', 6379)],
+        #     "hosts": [('redis', 16379)],
         # },
         # "OPTIONS": {
         #     "CLIENT_CLASS": "django_redis.client.DefaultClient",
@@ -148,6 +145,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 用了oss后可能这个配置就无效了，记录在此
 
+# TODO 上线时需要删除
 # OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
 # OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
 # OSS_ENDPOINT = os.environ.get("OSS_ENDPOINT")  # 访问域名, 根据服务器上的实际配置修改

@@ -24,6 +24,7 @@ class File(models.Model):
     class Meta:
         verbose_name = "基础文件管理"
         verbose_name_plural = verbose_name
+        db_table = "file"
 
     def __str__(self):
         return self.title if self.title else self.file_name

@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:13
     ports:
-      - "5432:5432"
+      - "15432:5432"
     volumes:
       - /var/data/db:/var/lib/postgresql/data
     environment:
@@ -16,14 +16,14 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - "16379:6379"
     network_mode: bridge
     container_name: deer_block_redis
     restart: always
-  fsys:
+  deerblock:
     image: 101.35.246.34/deer_block/deer-block-server:latest
     ports:
-      - "12080:8088"
+      - "18080:8088"
     # 替换成线上生产
     environment:
       - POSTGRES_NAME=deer_block
@@ -33,7 +33,7 @@ services:
       - OSS_ACCESS_KEY_SECRET=HRxY0tiNUCuQ553ku6Mxsma2ncdafn
       - OSS_ENDPOINT=oss-cn-shanghai.aliyuncs.com
       - OSS_BUCKET_NAME=papaw
-    container_name: file_system
+    container_name: deer_block_server
     command: /bin/bash -c "python3 /opt/deer_block/manage.py makemigrations && python3 /opt/deer_block/manage.py migrate && gunicorn -c /opt/deer_block/gunicorn.conf.py mimi.wsgi:application"
     links:
       - db
