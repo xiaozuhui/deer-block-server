@@ -11,6 +11,8 @@ SECRET_KEY = 'django-insecure-#kyxtl177*d)kv^+2xi5w!e)m-6bm%jg#(me7_3lrzpnfd=uh3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# APPEND_SLASH = False  # 不需要最后加/
+
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 INSTALLED_APPS = [
@@ -67,7 +69,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'deer_block.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
@@ -103,7 +104,6 @@ CACHES = {
 
 # redis缓存时间
 REDIS_TIMEOUT = 60 * 60 * 24 * 15
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -141,13 +141,12 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 SESSION_COOKIE_AGE = 60 * 60 * 12
 SESSION_SAVE_EVERY_REQUEST = True
 
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = [os.path.join(BASE_DIR, 'static')]  # 用了oss后可能这个配置就无效了，记录在此
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 用了oss后可能这个配置就无效了，记录在此
 
 # OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
 # OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
@@ -182,6 +181,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'apps.paginations.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S",

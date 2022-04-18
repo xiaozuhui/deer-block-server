@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from apps.consts import FileType
 
@@ -11,13 +12,12 @@ class File(models.Model):
     file_type = models.CharField(
         max_length=50, verbose_name="文件类型", choices=FileType.choices, default=FileType.NONE)
     file = models.FileField(verbose_name="文件", upload_to="")
-    uploader_id = models.IntegerField(
-        verbose_name="上传者id", blank=True, null=True)
-    uploader_name = models.CharField(
-        max_length=50, verbose_name="上传者姓名", blank=True, null=True)
+    uploader = models.ForeignKey(User, verbose_name="上传者", blank=True, null=True, related_name="uploader",
+                                 on_delete=models.CASCADE)
     sequence = models.IntegerField(verbose_name="顺序", default=0)
     upload_time = models.DateTimeField(
         verbose_name="上传时间", auto_now=True)  # 上传时间
+    remarks = models.TextField(verbose_name="备注", blank=True, null=True)
     is_active = models.BooleanField(verbose_name="是否有效", default=True)
     is_private = models.BooleanField(verbose_name="是否私有", default=False)
 
@@ -52,4 +52,12 @@ class File(models.Model):
         """
         获取文件的大小
         """
-        return self.file.size
+        file_size = self.file.size
+        fs = "0 MB"
+        if file_size > 1024 * 1024:
+            fs = "{:.2f} MB".format(file_size / (1024 * 1024))
+        elif file_size > 1024:
+            fs = "{:.2f} KB".format(file_size / 1024)
+        else:
+            fs = "{:.2f} B".format(file_size)
+        return fs
