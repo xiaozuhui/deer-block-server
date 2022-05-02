@@ -20,6 +20,7 @@ class File(models.Model):
         verbose_name="上传时间", auto_now=True)  # 上传时间
     is_active = models.BooleanField(verbose_name="是否有效", default=True)
     is_private = models.BooleanField(verbose_name="是否私有", default=False)
+    # hash_code = models.CharField(max_length=32, verbose_name="哈希值", default="")
 
     class Meta:
         verbose_name = "基础文件管理"
