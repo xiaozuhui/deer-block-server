@@ -7,8 +7,8 @@ from rest_framework import routers
 app_name = "medias"
 
 route_v1 = routers.SimpleRouter()
-route_v1.register(r'media', views.FileModelViewSet)
+route_v1.register(r'file', views.FileModelViewSet)
 
 urlpatterns = [
-    url(r'', include((route_v1.urls, "media"), namespace='media_v1')),
+    url(r'', include((route_v1.urls, "medias"), namespace='medias_v1')),
 ]

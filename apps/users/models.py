@@ -15,11 +15,13 @@ class Profile(models.Model):
                            choices=UserGender.choices, blank=True)
     avatar = ImageField(File, verbose_name='用户头像', null=True, blank=True, related_name="user_avatar")
     birthday = models.DateField(null=True, blank=True, verbose_name='生日')
+
     # TODO 绑定支付宝、绑定微信、实名认证
 
     class Meta:
         verbose_name = "个人信息"
         verbose_name_plural = verbose_name
+        db_table = "profile"
 
     def __unicode__(self):
         return str(self.phone) + '  ' + str(self.user.id)

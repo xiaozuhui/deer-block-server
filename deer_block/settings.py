@@ -68,7 +68,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'deer_block.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
@@ -83,7 +82,7 @@ DATABASES = {
     #     'USER': os.environ.get("POSTGRES_USER"),
     #     'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
     #     'HOST': 'db',
-    #     'PORT': '5432',
+    #     'PORT': '15432',
     # },
 }
 
@@ -91,10 +90,9 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        # "LOCATION": "redis://192.168.0.112:6379/0",
         "LOCATION": "redis://127.0.0.1:6379/0",
         # 'CONFIG': {
-        #     "hosts": [('redis', 6379)],
+        #     "hosts": [('redis', 16379)],
         # },
         # "OPTIONS": {
         #     "CLIENT_CLASS": "django_redis.client.DefaultClient",
@@ -104,7 +102,6 @@ CACHES = {
 
 # redis缓存时间
 REDIS_TIMEOUT = 60 * 60 * 24 * 15
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -142,14 +139,14 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 SESSION_COOKIE_AGE = 60 * 60 * 12
 SESSION_SAVE_EVERY_REQUEST = True
 
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = [os.path.join(BASE_DIR, 'static')]  # 用了oss后可能这个配置就无效了，记录在此
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 用了oss后可能这个配置就无效了，记录在此
 
+# TODO 上线时需要删除
 # OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
 # OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
 # OSS_ENDPOINT = os.environ.get("OSS_ENDPOINT")  # 访问域名, 根据服务器上的实际配置修改
@@ -183,6 +180,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'apps.paginations.PageNumberPagination',
     'PAGE_SIZE': 20,
     'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S",

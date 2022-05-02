@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-
 from apps.media.models import File
 
 
@@ -17,9 +16,9 @@ class FileAdmin(admin.ModelAdmin):
 
     file_size.short_description = "文件大小"
 
-    list_display = ("id", "title", "file", "uploader_name",
-                    "uploader_id", "file_type", "file_size", "upload_time",
+    list_display = ("id", "title", "file", "uploader",
+                    "file_type", "file_size", "upload_time",
                     "is_active", "is_private", "sequence")
-    list_filter = ('uploader_name', 'uploader_id', 'file_type', 'upload_time')
+    list_filter = ('uploader', 'file_type', 'upload_time')
     list_per_page = 40
     ordering = ('upload_time',)
