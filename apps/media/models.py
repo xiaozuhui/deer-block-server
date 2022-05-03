@@ -1,6 +1,6 @@
-from django.contrib.auth.models import User
 from django.db import models
 from apps.consts import FileType
+from apps.users.models import User
 
 
 class File(models.Model):

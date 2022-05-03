@@ -1,20 +1,20 @@
-from django.contrib.auth.models import User
 from django.utils.text import gettext_lazy as _
 from rest_framework import serializers
 from . import models
+from . import model2
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('url', 'username', 'email', 'groups')
+        model = models.User
+        fields = '__all__'
 
 
 class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = models.Profile
+        model = model2.UserProfile
         fields = '__all__'
 
 
@@ -35,3 +35,8 @@ class BlackTokenSerializer(serializers.Serializer):
         except TokenError:
             self.fail('bad_token')
 
+
+class RegisterSerializer(serializers.Serializer):
+    class Meta:
+        model = models.User
+        fields = '__all__'

@@ -37,6 +37,8 @@ AUTHENTICATION_BACKENDS = (
     'apps.users.backends.MobileTokenModelBackend',
 )
 
+AUTH_USER_MODEL = 'users.User'
+
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -103,8 +105,6 @@ CACHES = {
 # redis缓存时间
 REDIS_TIMEOUT = 60 * 60 * 24 * 15
 
-# Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
