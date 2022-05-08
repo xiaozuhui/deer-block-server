@@ -74,31 +74,29 @@ WSGI_APPLICATION = 'deer_block.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
     # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': os.environ.get("POSTGRES_NAME"),
-    #     'USER': os.environ.get("POSTGRES_USER"),
-    #     'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
-    #     'HOST': 'db',
-    #     'PORT': '15432',
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
     # },
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get("POSTGRES_NAME"),
+        'USER': os.environ.get("POSTGRES_USER"),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
+        'HOST': 'db',
+        'PORT': '5432',
+    },
 }
 
 # redis配置
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/0",
-        # 'CONFIG': {
-        #     "hosts": [('redis', 16379)],
-        # },
-        # "OPTIONS": {
-        #     "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        # }
+        "LOCATION": "redis://redis:6379/0",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_KWARGS": {"max_connections": 100}
+        }
     }
 }
 
@@ -146,15 +144,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 用了oss后可能这个配置就无效了，记录在此
 
-# TODO 上线时需要删除
-# OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
-# OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
-# OSS_ENDPOINT = os.environ.get("OSS_ENDPOINT")  # 访问域名, 根据服务器上的实际配置修改
-# OSS_BUCKET_NAME = os.environ.get("OSS_BUCKET_NAME")  # oss 创建的 BUCKET 名称
-OSS_ACCESS_KEY_ID = "LTAI5tEqusWURSPxDZAWnhNZ"
-OSS_ACCESS_KEY_SECRET = "HRxY0tiNUCuQ553ku6Mxsma2ncdafn"
-OSS_ENDPOINT = "oss-cn-shanghai.aliyuncs.com"
-OSS_BUCKET_NAME = "papaw"
+# OSS配置
+OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
+OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
+OSS_ENDPOINT = os.environ.get("OSS_ENDPOINT")  # 访问域名, 根据服务器上的实际配置修改
+OSS_BUCKET_NAME = os.environ.get("OSS_BUCKET_NAME")  # oss 创建的 BUCKET 名称
+# OSS_ACCESS_KEY_ID = "LTAI5tEqusWURSPxDZAWnhNZ"
+# OSS_ACCESS_KEY_SECRET = "HRxY0tiNUCuQ553ku6Mxsma2ncdafn"
+# OSS_ENDPOINT = "oss-cn-shanghai.aliyuncs.com"
+# OSS_BUCKET_NAME = "papaw"
 
 DEFAULT_FILE_STORAGE = 'django_oss_storage.backends.OssMediaStorage'
 
@@ -193,7 +191,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '30/second',
         'user': '30/second'
-    }
+    },
+    'EXCEPTION_HANDLER': 'exceptions.custom_errors.custom_exception_handler',
 }
 
 SIMPLE_JWT = {
@@ -282,5 +281,20 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
+    },
+}
+
+
+SEND_MSG_MODE = os.environ.get("SEND_MSG_MODE")
+
+# 阿里云发送短信服务的子账号密码
+SEND_MESSAGE_ACCESS_KEY = os.environ.get("SEND_MESSAGE_ACCESS_KEY")
+SEND_MESSAGE_ACCESS_SECRET = os.environ.get("SEND_MESSAGE_ACCESS_SECRET")
+
+ALI_SEND_CONFIG = {
+    # register and login
+    "ral": {
+        "sign_name": os.environ.get("SIGN_NAME"),
+        "template_code": os.environ.get("TEMPLATE_CODE"),
     },
 }

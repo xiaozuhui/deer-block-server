@@ -13,6 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
 
+    phone_number = serializers.CharField(max_length=14, read_only=True)
+
     class Meta:
         model = model2.UserProfile
         fields = '__all__'
@@ -37,6 +39,20 @@ class BlackTokenSerializer(serializers.Serializer):
 
 
 class RegisterSerializer(serializers.Serializer):
-    class Meta:
-        model = models.User
-        fields = '__all__'
+    phone_number = serializers.CharField(
+        min_length=11, max_length=11, trim_whitespace=True)
+    validate_code = serializers.CharField(max_length=6, trim_whitespace=True)
+    username = serializers.CharField(
+        max_length=50, allow_blank=True, trim_whitespace=True)
+
+    def to_internal_value(self, data):
+        if 'username' not in data:
+            data['username'] = ""
+        return super(RegisterSerializer, self).to_internal_value(data)
+
+
+class MobileSendMessageSerializer(serializers.Serializer):
+    """手机号码请求验证码
+    """
+    phone_number = serializers.CharField(
+        min_length=11, max_length=11, trim_whitespace=True)

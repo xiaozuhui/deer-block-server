@@ -10,6 +10,7 @@ RUN  apt-get install -y python3 python-dev python3-pip libpq-dev gunicorn postgr
 RUN mkdir -p /opt/deer_block
 COPY . /opt/deer_block
 WORKDIR /opt/deer_block
+RUN mkdir -p /opt/deer_block/logs/
 RUN pip3 install -r requirements.txt -i https://pypi.douban.com/simple
 # 将端口转发到8088
 EXPOSE 8088

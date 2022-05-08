@@ -1,8 +1,15 @@
+from .models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+import logging
 from django.contrib.auth import get_user_model
 from django.db import models
 
 from apps.consts import UserGender
 from apps.custom_models import ImageField
+
+logger = logging.getLogger(__name__)
+
 
 class UserProfile(models.Model):
     """
@@ -32,3 +39,15 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    @property
+    def phone_number(self):
+        return self.user.phone_number
+
+
+@receiver(post_save, sender=User, dispatch_uid="user_post_save")
+def user_create_handler(sender, instance, **kwargs):
+    logger.info("创建User[{}]的UserProfile信息".format(instance))
+    profile = UserProfile()
+    profile.user = instance
+    profile.save()

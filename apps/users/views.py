@@ -1,20 +1,25 @@
 import http
 import logging
+import random
+
 from django.core.cache import cache
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from utils.message_tools import send_message
+from exceptions.cache_err import CacheRequestError as crerr
+from exceptions.custom_errors import SUCCESS
+from exceptions.send_message import SendMessageError as smerr
+from utils import consts
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
+from utils.send_message import dispatch
 
-from utils.user_tools import get_register_key, get_register_token, get_user_name, validate_code
+from utils.user_tools import get_user_name, get_user_password
 
 from .models import User
 from .model2 import UserProfile
-from .serializers import RegisterSerializer, UserSerializer, ProfileSerializer, BlackTokenSerializer
-from apps.users import serializers
+from .serializers import MobileSendMessageSerializer, RegisterSerializer, UserSerializer, ProfileSerializer, BlackTokenSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -55,21 +60,17 @@ class RegisterView(GenericAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
-    def _register(self, phone_number, vcode, username=""):
-        """
-        1、如果cache中没有token，则发出短信验证码，并且五分钟后失效
-        2、如果cache中有该对应的token，则验证token是否正确，如果正确，则直接创建用户
-        """
+    def _register(self, phone_number, vcode, username="") -> dict:
         if not phone_number:
-            raise ValueError("phone number is required")
-
-        register_key = get_register_key(phone_number)
-        if cache.get(register_key, None):
+            raise smerr.PhoneNumberEmpty
+        register_key = "smg_{}".format(phone_number)
+        token = cache.get(register_key, None)
+        if token:
             # 2、如果存在值，则验证token
             if not vcode:
-                raise ValueError("验证码 is required")
-            if not validate_code(phone_number, vcode):
-                raise ValueError("验证码过期，请重新请求")
+                raise smerr.ValidCodeEmpty
+            if token != vcode:
+                raise smerr.ValidCodeWrong
             return {
                 "phone_number": phone_number,
                 "username": username if username else get_user_name(phone_number),
@@ -77,37 +78,95 @@ class RegisterView(GenericAPIView):
                 "is_staff": False,
                 "is_superuser": False,
             }
-        else:
-            # 1、如果没有，则写入token
-            _, register_code = get_register_token()  # 存入cache的token，以及发送给用户的code
-            cache.set(register_key, register_code, timeout=5*60)  # 只保存五分钟
-            res = send_message(phone_number, register_code,
-                               'LTAI5tKqWQhoEfRhyJKc15yW', 'FGhlSPqkSE7qmZksPUYya762j2AdaR')
-            if res["Code"] != "OK":
-                logger.error("错误的结果：{}".format(res["Message"]))
-                raise ValueError("发送信息失败")
-            return None
+        # 如果token为空，则可以直接判断为失效
+        raise smerr.ValidCodeExpire
 
     def post(self, request):
-        phone_number = request.data.get("phone_number", None)
-        validate_code = request.data.get("validate_code", None)
-        password = request.data.get("password", "123456")
-        username = request.data.get("username", "")
-        data = self._register(phone_number, validate_code, username)
-        if data:
-            # 如果有用户，那么就应该创建User
-            user = User()
-            user.username = data["username"]
-            user.set_password(password)
-            user.phone_number = data["phone_number"]
-            user.save()
-            refresh = RefreshToken.for_user(user)
-            res_data = {
-                "username": user.username,
-                "phone_number": user.phone_number,
-                "user_id": user.id,
-                "refresh": str(refresh),
-                "access": str(refresh.access_token)
-            }
-            return Response(status=http.HTTPStatus.OK, data=res_data)
-        return Response(status=http.HTTPStatus.OK, data={"send_status": "OK"})
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.data["phone_number"]
+        vcode = serializer.data["validate_code"]
+        username = serializer.data.get("username", "")
+        data = self._register(phone_number, vcode, username)
+        user = User()
+        user.username = data["username"]
+        user.set_password(get_user_password())
+        user.phone_number = data["phone_number"]
+        user.save()
+        
+        # 注册用户后默认生成profile数据
+        profile = UserProfile.objects.get(user__id=user.id)
+        # 注册用户后，默认登录
+        refresh = RefreshToken.for_user(user)
+        res_data = {
+            "username": user.username,
+            "phone_number": user.phone_number,
+            "user_id": user.id,
+            "user_profile_id": profile.id,  # 用户对应的profile的id，已经初始化创建
+            "refresh": str(refresh),
+            "access": str(refresh.access_token)
+        }
+        return Response(status=http.HTTPStatus.OK, data=res_data)
+
+
+class SendMessageView(GenericAPIView):
+    """发送短信的API
+
+    post: 
+        请求短信的发送
+
+        参数:
+            - phone_number: 手机号码
+    """
+    serializer_class = MobileSendMessageSerializer
+    permission_classes = [AllowAny]
+
+    def _send_message(self, phone_number: str, vcode: str):
+        client = dispatch()
+        res = client.send_message(phone_number, vcode)
+        if res["Code"] != "OK":
+            # logger.error("错误的结果：{}".format(res["Message"]))
+            err = smerr.SendFailure
+            err.set_message = res["Message"]
+            err.set_params = res
+            raise err
+        return
+
+    def post(self, request, *args, **kwargs):
+        """请求短信的发送
+
+        1、如果cache中没有对应的手机号，那么就生成验证码，然后发送信息
+        2、如果有验证码，那么就返回不能重复请求
+
+        这里的请求有一个问题，那就是失效时间
+        预计会在cache中保留两份数据
+        一份是请求的cache，限时60秒，60秒内无法重新请求
+        一份是发送验证码的cache，限时5分钟，如果60秒后重新请求，则删除该记录后，再重新生成记录
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        phone_number = serializer.data["phone_number"]
+        if not phone_number:
+            raise smerr.PhoneNumberEmpty
+
+        # 从cache中查询
+        token = cache.get("req_{}".format(phone_number), default=None)
+        if token is not None:
+            # req_num的value本身就是""空字符串，所以not none就是存在
+            # 如果token存在，说明已经请求过并且还没有失效，因此直接返回即可
+            warn = crerr.ExistToken
+            warn.set_message = "手机验证码请求已经存在，并且还未经过60秒失效"
+            return Response(status=http.HTTPStatus.OK, data=warn.to_serializer())
+
+        # token 为None意味着，可以重新请求验证码
+        cache.set("req_{}".format(phone_number), "", timeout=60)  # 设置60秒的失效时间
+        vcode = "".join(random.choices(consts.NUM, k=6))  # 形似 654789
+
+        # 搜索smg_phonenumber对应的token，如果存在，则删除重新写入，如果不存在，直接写入
+        if cache.get("smg_{}".format(phone_number), default=None):
+            cache.delete("smg_{}".format(phone_number))
+
+        # 发送信息，如果没有报错，说明信息正确发出
+        self._send_message(phone_number, vcode)
+        cache.set("smg_{}".format(phone_number), vcode, timeout=5*60)  # 5分钟的失效
+        return Response(status=http.HTTPStatus.OK, data={"code": SUCCESS, "message": "OK"})

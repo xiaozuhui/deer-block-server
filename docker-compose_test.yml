@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   db:
@@ -20,7 +20,7 @@ services:
     container_name: deer_block_redis
     restart: always
   deerblock:
-    image: 101.35.246.34/deer_block/deer-block-server:latest
+    image: deer_block/deer-block-server:v1
     ports:
       - "18080:8088"
     # 替换成线上生产

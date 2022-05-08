@@ -3,8 +3,6 @@ from django.contrib.auth.backends import ModelBackend
 from django.core.cache import cache
 from django.db.models import Q
 
-from utils.user_tools import get_register_key, validate_code
-
 UserModel = get_user_model()
 
 
@@ -64,6 +62,14 @@ class MobileTokenModelBackend(ModelBackend):
             # difference between an existing and a non-existing user (#20760).
             UserModel().set_password(password)
         else:
-            if validate_code(username, password) and self.user_can_authenticate(user):
-                return user
+            register_key = "smg_{}".format(username)
+            token = cache.get(register_key, None)
+            if token:
+                # 2、如果存在值，则验证token
+                if not password:
+                    return None
+                if token != password:
+                    return None
+                if self.user_can_authenticate(user):
+                    return user
             return None

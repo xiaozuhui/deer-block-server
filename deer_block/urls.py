@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from apps.users.views import LogoutView, RegisterView
+from apps.users.views import LogoutView, RegisterView, SendMessageView
 from deer_block import settings
 
 urlpatterns = [
@@ -21,6 +21,7 @@ urlpatterns = [
     path(r'register/', RegisterView.as_view(), name='auth_register'),
     path(r'doc/', include_docs_urls(title="鹿街API文档",
          description="鹿街后端接口文档", public=False)),
+    path(r'msg/phone_valid/', SendMessageView.as_view(), name='send_msg'),  # 请求发送信息
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
