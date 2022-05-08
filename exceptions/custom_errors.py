@@ -14,6 +14,7 @@ def custom_exception_handler(exc, context):
     logger.error("发生异常：\n{}".format(str(exc)))
     if response is not None:
         response.data['status_code'] = response.status_code
+        response.data['code'] = -1
         if isinstance(exc, CustomError):
             error_dict = exc.to_serializer()
             response.data.update(error_dict)

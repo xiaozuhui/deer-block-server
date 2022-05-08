@@ -48,6 +48,9 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User, dispatch_uid="user_post_save")
 def user_create_handler(sender, instance, **kwargs):
     logger.info("创建User[{}]的UserProfile信息".format(instance))
+    profiles = UserProfile.objects.filter(user__id=instance.id)
+    if profiles:
+        return
     profile = UserProfile()
     profile.user = instance
     profile.save()
