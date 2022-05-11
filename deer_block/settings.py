@@ -71,14 +71,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'deer_block.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # },
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get("POSTGRES_NAME"),
@@ -258,7 +251,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，根据文件大小自动切
             'filename': os.path.join(BASE_LOG_DIR, "fs_info.log"),  # 日志文件
             'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
-            'backupCount': 3,  # 备份数为3  xx.log --> xx.log.1 --> xx.log.2 --> xx.log.3
+            'backupCount': 10,  # 备份数为3  xx.log --> xx.log.1 --> xx.log.2 --> xx.log.3
             'formatter': 'standard',
             'encoding': 'utf-8',
         },
@@ -273,8 +266,9 @@ LOGGING = {
         },
     },
     'loggers': {
-        '': {  # 默认的logger应用如下配置
-            'handlers': ['info', 'console', 'error'],  # 上线之后可以把'console'移除
+        'django': {  # 默认的logger应用如下配置
+            # 'handlers': ['info', 'console', 'error'],  # 上线之后可以把'console'移除
+            'handlers': ['info', 'console'],
             'level': 'INFO',
             'propagate': True,
         },

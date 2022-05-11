@@ -1,11 +1,12 @@
 from django.db import models
+from apps.base_model import BaseModel
 
 from apps.consts import PublishStatus
 from apps.media.models import File
 from apps.users.models import User
 
 
-class Issues(models.Model):
+class Issues(BaseModel):
     """
     动态
     对于一个动态来说，点赞、收藏、回复
@@ -26,7 +27,7 @@ class Issues(models.Model):
 
 class Collection(models.Model):
     """
-    收藏
+    收藏，收藏不需要使用逻辑删除
     """
     who = models.ForeignKey(User, verbose_name="收藏者", on_delete=models.CASCADE)
     issues = models.ForeignKey(
@@ -43,7 +44,7 @@ class Collection(models.Model):
 
 class ThumbsUp(models.Model):
     """
-    点赞
+    点赞，点赞不需要逻辑删除
     """
     who = models.ForeignKey(User, verbose_name="点赞者", on_delete=models.CASCADE)
     dy_info = models.ForeignKey(
@@ -57,7 +58,7 @@ class ThumbsUp(models.Model):
         db_table = "thumbs_up"
 
 
-class Reply(models.Model):
+class Reply(BaseModel):
     """
     动态的回复
     关于动态的回复，每一次回复，都应该提示该回复的“父回复”的“回复者”，以及回复中被@的用户

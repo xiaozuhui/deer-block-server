@@ -1,3 +1,4 @@
+from apps.base_model import BaseModel
 from .models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -11,7 +12,7 @@ from apps.custom_models import ImageField
 logger = logging.getLogger(__name__)
 
 
-class UserProfile(models.Model):
+class UserProfile(BaseModel):
     """
     用户概述
     """
@@ -52,7 +53,7 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User, dispatch_uid="user_post_save")
 def user_create_handler(sender, instance, **kwargs):
     logger.info("创建User[{}]的UserProfile信息".format(instance))
-    profiles = UserProfile.objects.filter(user__id=instance.id)
+    profiles = UserProfile.logic_objects.filter(user__id=instance.id)
     if profiles:
         return
     profile = UserProfile()
@@ -60,7 +61,7 @@ def user_create_handler(sender, instance, **kwargs):
     profile.save()
 
 
-class UserPayment(models.Model):
+class UserPayment(BaseModel):
     """绑定支付宝、绑定微信、实名认证
     """
     user = models.OneToOneField(User,

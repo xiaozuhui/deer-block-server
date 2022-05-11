@@ -19,7 +19,7 @@ def get_user_name(phone_number: str = "") -> str:
         str: 用户K00013487YD
     """
     first = "".join(random.choices(consts.CHR, k=1)).upper()
-    no = User.objects.count()+1
+    no = User.logic_objects.count()+1
     mid_no = phone_number[-4:] if phone_number else str(random.random()*1000)[:4]
     last = "".join(random.choices(consts.CHR, k=2)).upper()
     return "用户 {}".format(first+str(no).rjust(4, '0')+mid_no+last)

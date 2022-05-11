@@ -1,8 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from apps.base_model import BaseModel
 
-class User(AbstractUser):
+
+class User(AbstractUser, BaseModel):
     """
     自定义用户信息, 使用基本user, 加入手机号即可
     """

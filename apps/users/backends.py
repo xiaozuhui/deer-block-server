@@ -11,6 +11,11 @@ class CustomBackend(ModelBackend):
     用户名、手机号 + 密码
     """
 
+    def user_can_authenticate(self, user):
+        is_active = getattr(user, 'is_active', None)
+        is_delete = getattr(user, 'is_delete', False)
+        return (is_active and not is_delete) or (is_active is None)
+
     def authenticate(self, request, username=None, password=None, **kwargs):
         """使用用户名或是手机号+密码的方式验证
 
@@ -27,7 +32,7 @@ class CustomBackend(ModelBackend):
         if username is None or password is None:
             return
         try:
-            user = UserModel.objects.get(
+            user = UserModel.logic_objects.get(
                 Q(username=username) | Q(phone_number=username))
         except UserModel.DoesNotExist:
             # Run the default password hasher once to reduce the timing
@@ -39,6 +44,12 @@ class CustomBackend(ModelBackend):
 
 
 class MobileTokenModelBackend(ModelBackend):
+
+    def user_can_authenticate(self, user):
+        is_active = getattr(user, 'is_active', None)
+        is_delete = getattr(user, 'is_delete', False)
+        return (is_active and not is_delete) or (is_active is None)
+
     def authenticate(self, request, username=None, password=None, **kwargs):
         """手机号+验证码的方式验证
         如果手机号码不正确，那么就直接报错
@@ -56,7 +67,7 @@ class MobileTokenModelBackend(ModelBackend):
                 return None
             username = kwargs.get(UserModel.USERNAME_FIELD)
         try:
-            user = UserModel.objects.get(phone_number=username)  # 手机号存在
+            user = UserModel.logic_objects.get(phone_number=username)  # 手机号存在
         except UserModel.DoesNotExist:
             # Run the default password hasher once to reduce the timing
             # difference between an existing and a non-existing user (#20760).

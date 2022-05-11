@@ -27,12 +27,12 @@ class UserViewSet(CustomViewBase):
     """
     User TODO 需要对每个操作都进行验权
     """
-    queryset = User.objects.all().order_by('-date_joined')
+    queryset = User.logic_objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
 
 
 class ProfileViewSet(CustomViewBase):
-    queryset = UserProfile.objects.all().order_by('id')
+    queryset = UserProfile.logic_objects.all().order_by('id')
     serializer_class = ProfileSerializer
 
 
@@ -80,27 +80,59 @@ class RegisterView(GenericAPIView):
         # 如果token为空，则可以直接判断为失效
         raise smerr.ValidCodeExpire
 
+    def _login(self, phone_number: str, vcode: str, user: User) -> User:
+        """登录流程，且对user的合法性进行检测
+
+        Args:
+            phone_number (str): _description_
+            vcode (str): _description_
+            user (User): _description_
+
+        Raises:
+            smerr.ValidCodeExpire: _description_
+
+        Returns:
+            User: _description_
+        """
+        register_key = "smg_{}".format(phone_number)
+        token = cache.get(register_key, None)
+        if token:
+            if token != vcode:
+                raise smerr.ValidCodeWrong
+            if not user.is_active:
+                raise smerr.UserNotActive
+            if user.is_delete:
+                raise smerr.UserHasDeleted
+            return user
+        raise smerr.ValidCodeExpire
+
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.data["phone_number"]
         vcode = serializer.data["validate_code"]
         username = serializer.data.get("username", "")
-        data = self._register(phone_number, vcode, username)
-        user = User()
-        user.username = data["username"]
-        user.set_password(get_user_password())
-        user.phone_number = data["phone_number"]
-        user.save()
+        # 先判断，是否存在该user，如果存在，则不再创建
+        user = User.logic_objects.filter(
+            phone_number=phone_number)  # 为queryset，需要取第一个值
+        if not user:
+            data = self._register(phone_number, vcode, username)
+            user = User()
+            user.username = data["username"]
+            user.set_password(get_user_password())
+            user.phone_number = data["phone_number"]
+            user.save()
+        else:
+            user = self._login(phone_number, vcode, user[0])
         # 注册用户后默认生成profile数据
-        profile = UserProfile.objects.get(user__id=user.id)
+        profile = UserProfile.logic_objects.filter(user__id=user.id)
         # 注册用户后，默认登录
         refresh = RefreshToken.for_user(user)
         res_data = {
             "username": user.username,
             "phone_number": user.phone_number,
             "user_id": user.id,
-            "user_profile_id": profile.id,  # 用户对应的profile的id，已经初始化创建
+            "user_profile_id": profile[0].id if profile else "",
             "refresh": str(refresh),
             "access": str(refresh.access_token)
         }

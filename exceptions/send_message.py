@@ -32,3 +32,17 @@ class SendMessageError(CustomErrorEnum, APIException):
         "SM005",
         ErrorType.SEND_MEG,
     )
+
+    UserNotActive = CustomError(
+        "用户并非活跃用户，请联系客服",
+        "SM006",
+        ErrorType.USER,
+        message="用户字段is_active为false"
+    )
+
+    UserHasDeleted = CustomError(
+        "用户已经被删除，请联系客服",
+        "SM007",
+        ErrorType.USER,
+        message="用户字段is_deleted为true"
+    )
