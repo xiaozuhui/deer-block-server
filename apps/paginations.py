@@ -10,13 +10,18 @@ class PageNumberPagination(_PageNumberPagination):
     max_page_size = 100  # 后端控制每页显示最大记录数
 
     def get_paginated_response(self, data):
-        return Response({
-            'links': {
-                'next': self.get_next_link(),
-                'previous': self.get_previous_link()
-            },
-            'total': self.page.paginator.count,
-            'page_num': self.page.number,
-            'page_size': self.get_page_size(self.request),
-            'items': data
-        })
+        data_ = {
+            "message": "OK",
+            "code": 0,
+            "data": {
+                'links': {
+                    'next': self.get_next_link(),
+                    'previous': self.get_previous_link()
+                },
+                'total': self.page.paginator.count,
+                'page_num': self.page.number,
+                'page_size': self.get_page_size(self.request),
+                'items': data
+            }
+        }
+        return Response(data=data_, status=200)

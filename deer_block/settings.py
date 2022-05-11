@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django_filters',
     'apps.users.apps.UserConfig',
     'apps.media.apps.MediaConfig',
+    'apps.square.apps.SquareConfig',
 ]
 
 # 依照此顺序进行验证
@@ -149,10 +150,6 @@ OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
 OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
 OSS_ENDPOINT = os.environ.get("OSS_ENDPOINT")  # 访问域名, 根据服务器上的实际配置修改
 OSS_BUCKET_NAME = os.environ.get("OSS_BUCKET_NAME")  # oss 创建的 BUCKET 名称
-# OSS_ACCESS_KEY_ID = "LTAI5tEqusWURSPxDZAWnhNZ"
-# OSS_ACCESS_KEY_SECRET = "HRxY0tiNUCuQ553ku6Mxsma2ncdafn"
-# OSS_ENDPOINT = "oss-cn-shanghai.aliyuncs.com"
-# OSS_BUCKET_NAME = "papaw"
 
 DEFAULT_FILE_STORAGE = 'django_oss_storage.backends.OssMediaStorage'
 
@@ -192,7 +189,7 @@ REST_FRAMEWORK = {
         'anon': '30/second',
         'user': '30/second'
     },
-    'EXCEPTION_HANDLER': 'exceptions.custom_errors.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'exceptions.base_excption.custom_exception_handler',
 }
 
 SIMPLE_JWT = {

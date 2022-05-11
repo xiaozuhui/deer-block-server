@@ -1,13 +1,12 @@
 import http
 
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from apps.base_view import CustomViewBase, JsonResponse
 
 from apps.media import models
 from apps.media.serializers import FileSerializer
 
 
-class FileModelViewSet(ModelViewSet):
+class FileModelViewSet(CustomViewBase):
     """
     上传文件的最低限度的请求参数：
     header使用Bearer的Tooken
@@ -30,4 +29,5 @@ class FileModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(status=http.HTTPStatus.OK, data=serializer.data, headers=headers)
+        return JsonResponse(status=http.HTTPStatus.OK,
+                            data=serializer.data, headers=headers)

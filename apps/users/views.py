@@ -4,11 +4,10 @@ import random
 
 from django.core.cache import cache
 from rest_framework import status
-from rest_framework import viewsets
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+from apps.base_view import CustomViewBase
 from exceptions.cache_err import CacheRequestError as crerr
-from exceptions.custom_errors import SUCCESS
 from exceptions.send_message import SendMessageError as smerr
 from utils import consts
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -24,7 +23,7 @@ from .serializers import MobileSendMessageSerializer, RegisterSerializer, UserSe
 logger = logging.getLogger(__name__)
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(CustomViewBase):
     """
     User TODO 需要对每个操作都进行验权
     """
@@ -32,7 +31,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-class ProfileViewSet(viewsets.ModelViewSet):
+class ProfileViewSet(CustomViewBase):
     queryset = UserProfile.objects.all().order_by('id')
     serializer_class = ProfileSerializer
 
@@ -49,7 +48,7 @@ class LogoutView(GenericAPIView):
     serializer_class = BlackTokenSerializer
 
     def post(self, request, *args):
-        sz = self.get_serializer(data=request.data)
+        sz = self.get_serializer(data=request.data.copy())
         sz.is_valid(raise_exception=True)
         sz.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -93,7 +92,6 @@ class RegisterView(GenericAPIView):
         user.set_password(get_user_password())
         user.phone_number = data["phone_number"]
         user.save()
-
         # 注册用户后默认生成profile数据
         profile = UserProfile.objects.get(user__id=user.id)
         # 注册用户后，默认登录
@@ -106,7 +104,7 @@ class RegisterView(GenericAPIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token)
         }
-        return Response(status=http.HTTPStatus.OK, data=res_data)
+        return Response(status=http.HTTPStatus.OK, data={"code": 0, "message": "OK", "data": res_data})
 
 
 class SendMessageView(GenericAPIView):
@@ -127,8 +125,8 @@ class SendMessageView(GenericAPIView):
         if res["Code"] != "OK":
             # logger.error("错误的结果：{}".format(res["Message"]))
             err = smerr.SendFailure
-            err.set_message = res["Message"]
-            err.set_params = res
+            err.set_message(res["Message"])
+            err.set_params(res)
             raise err
         return
 
@@ -143,7 +141,7 @@ class SendMessageView(GenericAPIView):
         一份是请求的cache，限时60秒，60秒内无法重新请求
         一份是发送验证码的cache，限时5分钟，如果60秒后重新请求，则删除该记录后，再重新生成记录
         """
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data.copy())
         serializer.is_valid(raise_exception=True)
         phone_number = serializer.data["phone_number"]
         if not phone_number:
@@ -155,8 +153,8 @@ class SendMessageView(GenericAPIView):
             # req_num的value本身就是""空字符串，所以not none就是存在
             # 如果token存在，说明已经请求过并且还没有失效，因此直接返回即可
             warn = crerr.ExistToken
-            warn.set_message = "手机验证码请求已经存在，并且还未经过60秒失效"
-            return Response(status=http.HTTPStatus.OK, data=warn.to_serializer())
+            warn.set_message("手机验证码请求已经存在，并且还未经过60秒失效")
+            raise warn
 
         # token 为None意味着，可以重新请求验证码
         cache.set("req_{}".format(phone_number), "", timeout=60)  # 设置60秒的失效时间
