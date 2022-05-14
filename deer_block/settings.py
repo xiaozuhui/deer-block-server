@@ -175,6 +175,7 @@ REST_FRAMEWORK = {
     'UNICODE_JSON': True,
     'COERCE_DECIMAL_TO_STRING': False,
     'DEFAULT_THROTTLE_CLASSES': (
+        # 反爬虫
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
     ),

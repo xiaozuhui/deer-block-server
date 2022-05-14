@@ -11,7 +11,7 @@ class BaseModel(custom_manager.LogicDeleteModel):
         verbose_name="数据创建时间", auto_now=True, null=True)
     updated_at = models.DateTimeField(
         verbose_name="数据更新时间", auto_now_add=True, null=True)
-    delete_at = models.DateTimeField(
+    deleted_at = models.DateTimeField(
         verbose_name="数据失效时间", null=True, blank=True)
 
     class Meta:

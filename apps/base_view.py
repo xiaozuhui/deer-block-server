@@ -3,20 +3,22 @@ from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework import status as status_
 from rest_framework.response import Response
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class JsonResponse(Response):
     """自定义Response
     """
 
-    def __init__(self, data=None, code=0, msg="OK",
-                 status=None,
-                 template_name=None, headers=None,
-                 exception=False, content_type=None):
-        super(Response, self).__init__(
-            None, status=status, template_name=template_name,
-            headers=headers, exception=exception, content_type=content_type)
+    def __init__(self, data={}, code=0, msg="OK", status=200, headers=None, content_type=None):
+        logger.info("headers: {}\ncontent_type: {}\n".format(
+            str(headers), str(content_type)))
+        super(Response, self).__init__(None, status=status)
         self.data = {"code": code, "message": msg, "data": data}
+        self.content_type = content_type
+        self.headers = headers if headers else {}
 
 
 class CustomViewBase(viewsets.ModelViewSet):
@@ -66,4 +68,4 @@ class CustomViewBase(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return JsonResponse(data=[], code=0, msg="OK", status=status_.HTTP_204_NO_CONTENT)
+        return JsonResponse(data={}, code=0, msg="OK", status=status_.HTTP_204_NO_CONTENT)

@@ -13,7 +13,7 @@ class Issues(BaseModel):
     """
     title = models.CharField(max_length=225, verbose_name="动态标题")
     publisher = models.ForeignKey(
-        User, verbose_name="发布者", on_delete=models.DO_NOTHING)
+        User, verbose_name="发布者", on_delete=models.CASCADE)
     status = models.CharField(
         max_length=20, choices=PublishStatus.choices, verbose_name="状态")
     content = models.TextField(verbose_name="动态内容")
@@ -47,7 +47,7 @@ class ThumbsUp(models.Model):
     点赞，点赞不需要逻辑删除
     """
     who = models.ForeignKey(User, verbose_name="点赞者", on_delete=models.CASCADE)
-    dy_info = models.ForeignKey(
+    issues = models.ForeignKey(
         Issues, verbose_name="对应动态", on_delete=models.CASCADE, null=True, blank=True)
     reply = models.ForeignKey(
         'Reply', verbose_name="对应回复", on_delete=models.CASCADE, null=True, blank=True)

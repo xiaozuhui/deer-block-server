@@ -199,4 +199,4 @@ class SendMessageView(GenericAPIView):
         # 发送信息，如果没有报错，说明信息正确发出
         self._send_message(phone_number, vcode)
         cache.set("smg_{}".format(phone_number), vcode, timeout=5*60)  # 5分钟的失效
-        return Response(status=http.HTTPStatus.OK, data={"code": 0, "message": "OK"})
+        return Response(status=http.HTTPStatus.OK, data={"code": 0, "message": "OK", "data": {}})

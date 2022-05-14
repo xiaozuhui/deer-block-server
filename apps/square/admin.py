@@ -1,3 +1,30 @@
 from django.contrib import admin
 
-# Register your models here.
+from apps.square import models
+
+
+@admin.register(models.Issues)
+class IssuesAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "publisher", "status", "is_delete")
+    list_filter = ('publisher', 'status', 'created_at')
+    list_per_page = 40
+    ordering = ('publisher', 'created_at',)
+
+
+@admin.register(models.Reply)
+class ReplyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'issues', 'reply', 'replier', 'is_delete')
+    list_filter = ('replier', 'issues__title',)
+    list_per_page = 20
+
+
+@admin.register(models.Collection)
+class CollectionAdmin(admin.ModelAdmin):
+    list_display = ('who', 'issues')
+    list_per_page = 20
+
+
+@admin.register(models.ThumbsUp)
+class ThumbsUpAdmin(admin.ModelAdmin):
+    list_display = ('who', 'issues')
+    list_per_page = 20

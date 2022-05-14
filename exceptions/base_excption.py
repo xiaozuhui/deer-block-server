@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
-    logger.error("发生异常：\n{}".format(str(exc)))
+    logger.error("发生异常：\nexc: {}\ncontext: {}".format(str(exc), str(context)))
     if response is not None:
         response.data['status_code'] = response.status_code
         response.data['code'] = -1
