@@ -22,6 +22,8 @@ class IssuesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Issues
+        # fields = "__all__"
+        exclude = ["publisher", ]
         extra_kwargs = {
             "id": {"required": False, "allow_null": True},
             "title": {"required": True, "allow_null": False},
@@ -30,7 +32,6 @@ class IssuesSerializer(serializers.ModelSerializer):
             "status": {"required": False},
             "content": {"required": False},
         }
-        exclude = ("medias",)
 
     def get_collections(self, issues):
         collections = Collection.objects.filter(issues__id=issues.id)
@@ -62,15 +63,25 @@ class IssuesSerializer(serializers.ModelSerializer):
 
 
 class CollectionSerializer(serializers.ModelSerializer):
+
+    publisher_id = serializers.CharField(read_only=True, source="publisher.id")
+    publisher_name = serializers.CharField(
+        read_only=True, source="publisher.username")
+
     class Meta:
         model = Collection
-        fields = "__all__"
+        exclude = ["publisher", ]
 
 
 class ThumbsUpSerializer(serializers.ModelSerializer):
+
+    publisher_id = serializers.CharField(read_only=True, source="publisher.id")
+    publisher_name = serializers.CharField(
+        read_only=True, source="publisher.username")
+
     class Meta:
         model = ThumbsUp
-        fields = "__all__"
+        exclude = ["publisher", ]
 
 
 class ReplySerializer(serializers.ModelSerializer):
@@ -78,10 +89,14 @@ class ReplySerializer(serializers.ModelSerializer):
     replies = serializers.SerializerMethodField()
     media_detial = serializers.SerializerMethodField()
 
+    publisher_id = serializers.CharField(
+        read_only=True, source="publisher.id")
+    publisher_name = serializers.CharField(
+        read_only=True, source="publisher.username")
+
     class Meta:
         model = Reply
-        # fields = "__all__"
-        exclude = ("medias",)
+        exclude = ["publisher", ]
         extra_kwargs = {
             "id": {"required": False, "allow_null": True},
             "medias": {"required": False, "allow_null": True},

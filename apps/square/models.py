@@ -15,7 +15,7 @@ class Issues(BaseModel):
     publisher = models.ForeignKey(
         User, verbose_name="发布者", on_delete=models.CASCADE)
     status = models.CharField(
-        max_length=20, choices=PublishStatus.choices, verbose_name="状态")
+        max_length=20, choices=PublishStatus.choices, verbose_name="状态", default=PublishStatus.DRAFT)
     content = models.TextField(verbose_name="动态内容")
     medias = models.ManyToManyField(File, verbose_name="图片和视频")
 
@@ -28,8 +28,10 @@ class Issues(BaseModel):
 class Collection(models.Model):
     """
     收藏，收藏不需要使用逻辑删除
+    收藏只能对应动态来收藏，而不能收藏回复
     """
-    who = models.ForeignKey(User, verbose_name="收藏者", on_delete=models.CASCADE)
+    publisher = models.ForeignKey(
+        User, verbose_name="收藏者", on_delete=models.CASCADE)
     issues = models.ForeignKey(
         Issues, verbose_name="对应动态", on_delete=models.CASCADE)
 
@@ -39,14 +41,16 @@ class Collection(models.Model):
         db_table = "collection"
 
     def __str__(self):
-        return "{0} - {1}".format(str(self.issues), self.who.username)
+        return "{0} - {1}".format(str(self.issues), self.publisher.username)
 
 
 class ThumbsUp(models.Model):
     """
     点赞，点赞不需要逻辑删除
+    但是点赞可以对回复进行点赞
     """
-    who = models.ForeignKey(User, verbose_name="点赞者", on_delete=models.CASCADE)
+    publisher = models.ForeignKey(
+        User, verbose_name="点赞者", on_delete=models.CASCADE)
     issues = models.ForeignKey(
         Issues, verbose_name="对应动态", on_delete=models.CASCADE, null=True, blank=True)
     reply = models.ForeignKey(
@@ -68,7 +72,7 @@ class Reply(BaseModel):
         Issues, verbose_name="对应动态", on_delete=models.CASCADE)
     reply = models.ForeignKey('Reply', verbose_name="对应回复", on_delete=models.DO_NOTHING, related_name="re_reply",
                               null=True, blank=True)
-    replier = models.ForeignKey(
+    publisher = models.ForeignKey(
         User, verbose_name="回复者", on_delete=models.DO_NOTHING)
     content = models.TextField(verbose_name="回复内容")
     medias = models.ManyToManyField(File, verbose_name="图片和视频")
@@ -79,4 +83,4 @@ class Reply(BaseModel):
         db_table = "replies"
 
     def __str__(self):
-        return "{0}的回复[{1}]".format(self.issues.title, self.replier.username)
+        return "{0}的回复[{1}]".format(self.issues.title, self.publisher.username)
