@@ -217,7 +217,7 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024  # 文件上传限制最大50M大小
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 文件上传限制最大50M大小
 
 BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
 LOGGING = {
