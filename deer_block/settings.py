@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'apps.users.apps.UserConfig',
     'apps.media.apps.MediaConfig',
     'apps.square.apps.SquareConfig',
+    'minio_storage',
 ]
 
 # 依照此顺序进行验证
@@ -138,13 +139,21 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 用了oss后可能这个配置就无效了，记录在此
 
-# OSS配置
-OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
-OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
-OSS_ENDPOINT = os.environ.get("OSS_ENDPOINT")  # 访问域名, 根据服务器上的实际配置修改
-OSS_BUCKET_NAME = os.environ.get("OSS_BUCKET_NAME")  # oss 创建的 BUCKET 名称
+# # 阿里云OSS配置
+# OSS_ACCESS_KEY_ID = os.environ.get("OSS_ACCESS_KEY_ID")
+# OSS_ACCESS_KEY_SECRET = os.environ.get("OSS_ACCESS_KEY_SECRET")
+# OSS_ENDPOINT = os.environ.get("OSS_ENDPOINT")  # 访问域名, 根据服务器上的实际配置修改
+# OSS_BUCKET_NAME = os.environ.get("OSS_BUCKET_NAME")  # oss 创建的 BUCKET 名称
+# DEFAULT_FILE_STORAGE = 'django_oss_storage.backends.OssMediaStorage'
 
-DEFAULT_FILE_STORAGE = 'django_oss_storage.backends.OssMediaStorage'
+# minio配置
+DEFAULT_FILE_STORAGE = "minio_storage.storage.MinioMediaStorage"
+MINIO_STORAGE_ENDPOINT = 'minio:9000'
+MINIO_STORAGE_ACCESS_KEY = 'root'
+MINIO_STORAGE_SECRET_KEY = '1qazXDR%?'
+MINIO_STORAGE_USE_HTTPS = False
+MINIO_STORAGE_MEDIA_BUCKET_NAME = 'media'
+MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -243,7 +252,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'level': 'DEBUG',
-            'filters': ['require_debug_true'],  # 只有在Django debug为True时才在屏幕打印日志
+            # 'filters': ['require_debug_true'],  # 只有在Django debug为True时才在屏幕打印日志
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
@@ -268,8 +277,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {  # 默认的logger应用如下配置
-            # 'handlers': ['info', 'console', 'error'],  # 上线之后可以把'console'移除
-            'handlers': ['info', 'console'],
+            'handlers': ['info', 'console', 'error'],  # 上线之后可以把'console'移除
             'level': 'INFO',
             'propagate': True,
         },

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 
 services:
   db:
@@ -18,6 +18,21 @@ services:
     ports:
       - "16379:6379"
     container_name: deer_block_redis
+    restart: always
+  minio:
+    image: quay.io/minio/minio:RELEASE.2022-05-08T23-50-31Z
+    command: server --address ":9000" --console-address ":9001" /data
+    expose:
+      - "19090:9000"
+      - "19091:9001"
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: 1qazXDR%?
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+    volumes:
+        - /docker/minio/data:/data               #映射当前目录下的data目录至容器内/data目录
+        - /docker/minio/config:/root/.minio/     #映射配置目录
+    privileged: true
     restart: always
   deerblock:
     image: 101.35.246.34/deer_block/deer-block-server:latest
@@ -41,12 +56,18 @@ services:
       - SEND_MSG_MODE=aliyun
       - SIGN_NAME=阿里云短信测试
       - TEMPLATE_CODE=SMS_154950909
+      # minio 
+      # TODO 上线的时候需要修改
+      - MINIO_IP=101.35.246.34
+      - MINIO_PORT=19090
     container_name: deer_block_server
     command: /bin/bash -c "python3 /opt/deer_block/manage.py makemigrations && python3 /opt/deer_block/manage.py migrate && gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application"
     links:
       - db
       - redis
+      - minio
     depends_on:
       - db
       - redis
+      - minio
     restart: always

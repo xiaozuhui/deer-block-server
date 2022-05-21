@@ -1,9 +1,13 @@
 import http
+import uuid
+import logging
 
 from apps.base_view import CustomViewBase, JsonResponse
 
 from apps.media import models
-from apps.media.serializers import FileSerializer
+from apps.media.serializers import FileSerializer, FileStorageSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class FileModelViewSet(CustomViewBase):
@@ -11,12 +15,6 @@ class FileModelViewSet(CustomViewBase):
     上传文件的最低限度的请求参数：
     header使用Bearer的Tooken
     file是文件路径/文件
-    curl --location --request POST 'localhost:8080/medias/file/' \
-         --header 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjUwODY3NDk0LCJpYXQiOjE2NTAyNjI2OTQsImp0aSI6IjRjMzRlYTQ4ZWQzODQwMjdiNDAwZGEzM2ZlOWM0OTY1IiwidXNlcl9pZCI6MX0.UwM6LMc61zDrW5KszqF-DPiBXRfaXHxmaPGHZp1BkYg' \
-         --form 'file_type="file"' \
-         --form 'file=@"/Users/xuziheng/Documents/T210802221932452070.md"' \
-         --form 'is_active="true"' \
-         --form 'is_private="false"'
     """
     ordering_fields = ("upload_time",)
     queryset = models.File.objects.all()
@@ -24,10 +22,28 @@ class FileModelViewSet(CustomViewBase):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-        data.__setitem__('uploader', request.user.id)
+        files = request.FILES.getlist('files')
+        file_list = []
+        for i, f in enumerate(files):
+            file_storage = models.FileStorage()
+            file_storage.uuid = str(uuid.uuid4())
+            file_storage.file = f
+            file_storage.filename = f.name
+            file_storage.sequence = i
+            file_storage.save()
+            logger.info("保存file, {}".format(file_storage))
+            file_list.append(file_storage.uuid)
+        data['uploader'] = request.user.id
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return JsonResponse(status=http.HTTPStatus.OK,
-                            data=serializer.data, headers=headers)
+        data = serializer.data
+        # 因为无法正确创建file_list ,所以出此下策
+        f = models.File.objects.filter(id=serializer.data['id'])
+        if f:
+            f = f[0]
+            f.file_list = file_list
+            f.save()
+            data = FileSerializer(f).data
+        headers = self.get_success_headers(data)
+        return JsonResponse(status=http.HTTPStatus.OK, data=data, headers=headers)

@@ -1,24 +1,30 @@
 from django.contrib import admin
 
-from apps.media.models import File
+from apps.media.models import File, FileStorage
 
 
 @admin.register(File)
 class FileAdmin(admin.ModelAdmin):
     def file_size(self, file):
-        file_size = file.file.size
-        if file_size > 1024 * 1024:
-            return "{} MB".format(file_size // (1024 * 1024))
-        elif file_size > 1024:
-            return "{} KB".format(file_size // 1024)
-        else:
-            return "{} B".format(file_size)
+        return file.file_size
 
     file_size.short_description = "文件大小"
 
-    list_display = ("id", "title", "file", "uploader",
-                    "file_type", "file_size", "upload_time",
-                    "is_active", "is_private", "sequence")
-    list_filter = ('uploader', 'file_type', 'upload_time')
+    list_display = ("id", "file_list", "uploader",
+                    "file_size", "upload_time", "is_active")
+    list_filter = ('uploader', 'upload_time')
     list_per_page = 40
     ordering = ('upload_time',)
+
+
+@admin.register(FileStorage)
+class FileStorageAdmin(admin.ModelAdmin):
+    def file_size(self, file):
+        return file.file_size
+
+    file_size.short_description = "文件大小"
+
+    list_display = ("uuid", "filename", "file",
+                    "file_size", "is_private", "sequence")
+    list_per_page = 40
+    ordering = ('sequence',)
