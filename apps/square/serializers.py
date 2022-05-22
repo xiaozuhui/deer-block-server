@@ -22,8 +22,7 @@ class IssuesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Issues
-        # fields = "__all__"
-        exclude = ["publisher", ]
+        fields = "__all__"
         extra_kwargs = {
             "id": {"required": False, "allow_null": True},
             "title": {"required": True, "allow_null": False},
@@ -70,7 +69,10 @@ class CollectionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Collection
-        exclude = ["publisher", ]
+        fields = "__all__"
+        extra_kwargs = {
+            "publisher": {"required": False, "allow_null": True},
+        }
 
 
 class ThumbsUpSerializer(serializers.ModelSerializer):
@@ -81,7 +83,10 @@ class ThumbsUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThumbsUp
-        exclude = ["publisher", ]
+        fields = "__all__"
+        extra_kwargs = {
+            "publisher": {"required": False, "allow_null": True},
+        }
 
 
 class ReplySerializer(serializers.ModelSerializer):
@@ -96,10 +101,11 @@ class ReplySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reply
-        exclude = ["publisher", ]
+        fields = "__all__"
         extra_kwargs = {
             "id": {"required": False, "allow_null": True},
             "medias": {"required": False, "allow_null": True},
+            "publisher": {"required": False, "allow_null": True},
         }
 
     def get_thumbs_up(self, reply):
