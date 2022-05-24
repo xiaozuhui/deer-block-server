@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.media.serializers import FileSerializer
-from .models import Collection, Issues, Reply, ThumbsUp
+from .models import Collection, Issues, Reply, Share, ThumbsUp
 
 
 class IssuesSerializer(serializers.ModelSerializer):
@@ -11,6 +11,8 @@ class IssuesSerializer(serializers.ModelSerializer):
     thumbs_up_count = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
+    shares = serializers.SerializerMethodField()
+    share_count = serializers.SerializerMethodField()
 
     # 发布者
     publisher_id = serializers.CharField(
@@ -18,7 +20,7 @@ class IssuesSerializer(serializers.ModelSerializer):
     publisher_name = serializers.CharField(
         read_only=True, source="publisher.username")
 
-    media_detial = serializers.SerializerMethodField()
+    media_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = Issues
@@ -46,7 +48,7 @@ class IssuesSerializer(serializers.ModelSerializer):
         replies = Reply.logic_objects.filter(issues__id=issues.id)
         return ReplySerializer(replies, many=True).data
 
-    def get_media_detial(self, issues):
+    def get_media_detail(self, issues):
         fs = issues.medias
         return FileSerializer(fs, many=True).data
 
@@ -60,6 +62,14 @@ class IssuesSerializer(serializers.ModelSerializer):
 
     def get_reply_count(self, issues):
         count = Reply.logic_objects.filter(issues__id=issues.id).count()
+        return count
+
+    def get_shares(self, issues):
+        sahres = Share.objects.filter(issues__id=issues.id)
+        return ShareSerializer(sahres, many=True).data
+
+    def get_share_count(self, issues):
+        count = Share.objects.filter(issues__id=issues.id).count()
         return count
 
 
@@ -85,6 +95,19 @@ class ThumbsUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ThumbsUp
+        fields = "__all__"
+        extra_kwargs = {
+            "publisher": {"required": False, "allow_null": True},
+        }
+
+
+class ShareSerializer(serializers.ModelSerializer):
+    publisher_id = serializers.CharField(read_only=True, source="publisher.id")
+    publisher_name = serializers.CharField(
+        read_only=True, source="publisher.username")
+
+    class Meta:
+        model = Share
         fields = "__all__"
         extra_kwargs = {
             "publisher": {"required": False, "allow_null": True},

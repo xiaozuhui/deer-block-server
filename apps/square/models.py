@@ -1,4 +1,3 @@
-import datetime
 from django.db import models
 from apps.base_model import BaseModel
 
@@ -55,9 +54,6 @@ class Collection(models.Model):
         verbose_name_plural = verbose_name
         db_table = "collection"
 
-    def __str__(self):
-        return "{0} - {1}".format(str(self.issues), self.publisher.username)
-
 
 class ThumbsUp(models.Model):
     """
@@ -75,6 +71,18 @@ class ThumbsUp(models.Model):
         verbose_name = "点赞"
         verbose_name_plural = verbose_name
         db_table = "thumbs_up"
+
+
+class Share(models.Model):
+    publisher = models.ForeignKey(
+        User, verbose_name="分享者", on_delete=models.CASCADE)
+    issues = models.ForeignKey(
+        Issues, verbose_name="对应动态", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "分享"
+        verbose_name_plural = verbose_name
+        db_table = "share"
 
 
 class Reply(BaseModel):

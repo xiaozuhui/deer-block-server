@@ -1,8 +1,8 @@
 from rest_framework.decorators import action
 from rest_framework import status
 from apps.consts import PublishStatus
-from apps.square.models import Collection, Issues, Reply, ThumbsUp
-from apps.square.serializers import CollectionSerializer, IssuesSerializer, ReplySerializer, ThumbsUpSerializer
+from apps.square.models import Collection, Issues, Reply, Share, ThumbsUp
+from apps.square.serializers import CollectionSerializer, IssuesSerializer, ReplySerializer, ShareSerializer, ThumbsUpSerializer
 from apps.base_view import CustomViewBase, JsonResponse
 import http
 
@@ -31,7 +31,12 @@ class IssuesViewSet(SquareBaseViewSet):
            其实可以使用/issues?publisher=1来控制 
         """
         user = request.user
-        isuess = Issues.logic_objects.filter(publisher__id=user.id)
+        isuess = Issues.logic_objects.filter(publisher__id=user.id).order_by('-updated_at')
+        page = self.paginate_queryset(isuess)
+        if page:
+            ser = self.get_serializer(page, many=True)
+            return self.get_paginated_response(ser.data)
+
         ser = self.get_serializer(isuess, many=True)
         headers = self.get_success_headers(ser.data)
         return JsonResponse(status=http.HTTPStatus.OK,
@@ -51,7 +56,8 @@ class IssuesViewSet(SquareBaseViewSet):
                 data_ = request.data.copy()
                 partial = kwargs.pop('partial', False)
                 data_["status"] = PublishStatus.PUBLISHED
-                serializer = self.get_serializer(issues, data=data_, partial=partial)
+                serializer = self.get_serializer(
+                    issues, data=data_, partial=partial)
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
                 return JsonResponse(data=serializer.data, msg="OK", code=0, status=http.HTTPStatus.OK)
@@ -104,6 +110,11 @@ class CollectionViewSet(SquareBaseViewSet):
 class ThumbsUpViewSet(SquareBaseViewSet):
     queryset = ThumbsUp.objects.all().order_by('-id')
     serializer_class = ThumbsUpSerializer
+
+
+class ShareViewSet(SquareBaseViewSet):
+    queryset = Share.objects.all().order_by('-id')
+    serializer_class = ShareSerializer
 
 
 class ReplyViewSet(SquareBaseViewSet):
