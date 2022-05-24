@@ -1,4 +1,5 @@
 import datetime
+from typing import List
 from django.db import models
 from apps import custom_manager
 
@@ -16,3 +17,16 @@ class BaseModel(custom_manager.LogicDeleteModel):
 
     class Meta:
         abstract = True
+
+    @staticmethod
+    def compare(request_data, model_intance, compare_items: List[str]):
+        """对比request.Data和对应的model_data之间的数据比较
+        """
+        for compare_item in compare_items:
+            item = request_data.get(compare_item, None)
+            if not hasattr(model_intance, compare_item):
+                return False
+            model_item = getattr(model_intance, compare_item)
+            if item != model_item:
+                return False
+        return True

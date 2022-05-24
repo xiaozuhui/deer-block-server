@@ -30,6 +30,8 @@ class IssuesSerializer(serializers.ModelSerializer):
             "medias": {"required": False, "allow_null": True},
             "status": {"required": False},
             "content": {"required": False},
+            "origin": {"required": False, "allow_null": True},
+            "version": {"required": False, "allow_null": True},
         }
 
     def get_collections(self, issues):

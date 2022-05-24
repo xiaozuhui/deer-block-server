@@ -2,13 +2,14 @@ import http
 import logging
 import random
 
+from rest_framework.decorators import action
 from django.core.cache import cache
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from apps.base_view import CustomViewBase
-from exceptions.cache_err import CacheRequestError as crerr
-from exceptions.send_message import SendMessageError as smerr
+from apps.base_view import CustomViewBase, JsonResponse
+from exceptions.custom_excptions.cache_err import CacheRequestError as crerr
+from exceptions.custom_excptions.send_message import SendMessageError as smerr
 from utils import consts
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
@@ -34,6 +35,18 @@ class UserViewSet(CustomViewBase):
 class ProfileViewSet(CustomViewBase):
     queryset = UserProfile.logic_objects.all().order_by('id')
     serializer_class = ProfileSerializer
+
+    @action(methods=['get'], detail=False)
+    def current_profile(self, request, *args, **kwargs):
+        """
+        获取当前用户的profile
+        """
+        user = request.user
+        profile = UserProfile.objects.filter(user__id=user.id)
+        serializer = self.get_serializer(profile)
+        headers = self.get_success_headers(serializer.data)
+        return JsonResponse(status=http.HTTPStatus.OK,
+                            data=serializer.data, headers=headers, msg="OK", code=0)
 
 
 class LogoutView(GenericAPIView):

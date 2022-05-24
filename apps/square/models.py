@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from apps.base_model import BaseModel
 
@@ -18,11 +19,25 @@ class Issues(BaseModel):
         max_length=20, choices=PublishStatus.choices, verbose_name="状态", default=PublishStatus.DRAFT)
     content = models.TextField(verbose_name="动态内容")
     medias = models.ManyToManyField(File, verbose_name="图片和视频")
+    # origin存在的意义是，保留之前的修改，标注上一次的版本是什么
+    origin = models.ForeignKey(
+        'Issues', verbose_name="原动态", related_name="origin_issues", null=True, on_delete=models.CASCADE)
+    # version同理
+    version = models.IntegerField(verbose_name="版本", default=0)
 
     class Meta:
         verbose_name = "动态"
         verbose_name_plural = verbose_name
         db_table = "issues"
+
+    def change_status(self, status=None):
+        if status == PublishStatus.DRAFT:
+            self.status = PublishStatus.DRAFT
+        elif status == PublishStatus.PUBLISHED:
+            self.status = PublishStatus.PUBLISHED
+        else:
+            self.status = PublishStatus.ABANDONED
+        self.save()
 
 
 class Collection(models.Model):

@@ -1,4 +1,4 @@
-from exceptions.code_error import CodeError
+from exceptions.custom_excptions.code_error import CodeError
 
 if __name__ == "__main__":
     err = CodeError('ErrCodeType')
