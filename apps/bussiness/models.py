@@ -13,3 +13,10 @@ class Collection(models.Model):
 
 class ThumbUp(models.Model):
     pass
+
+
+class Tag(models.Model):
+    pass
+
+class Category(models.Model):
+    pass

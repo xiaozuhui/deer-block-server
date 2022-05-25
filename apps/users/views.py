@@ -42,7 +42,7 @@ class ProfileViewSet(CustomViewBase):
         获取当前用户的profile
         """
         user = request.user
-        profile = UserProfile.objects.filter(user__id=user.id)
+        profile = UserProfile.logic_objects.filter(user__id=user.id)
         serializer = self.get_serializer(profile)
         headers = self.get_success_headers(serializer.data)
         return JsonResponse(status=http.HTTPStatus.OK,
