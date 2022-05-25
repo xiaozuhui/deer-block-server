@@ -31,13 +31,13 @@ class IssuesViewSet(SquareBaseViewSet):
            其实可以使用/issues?publisher=1来控制 
         """
         user = request.user
-        isuess = Issues.logic_objects.filter(publisher__id=user.id).order_by('-updated_at')
-        page = self.paginate_queryset(isuess)
+        issues = Issues.logic_objects.filter(publisher__id=user.id, status=PublishStatus.PUBLISHED).order_by('-updated_at')
+        page = self.paginate_queryset(issues)
         if page:
             ser = self.get_serializer(page, many=True)
             return self.get_paginated_response(ser.data)
 
-        ser = self.get_serializer(isuess, many=True)
+        ser = self.get_serializer(issues, many=True)
         headers = self.get_success_headers(ser.data)
         return JsonResponse(status=http.HTTPStatus.OK,
                             data=ser.data, headers=headers, msg="OK", code=0)
