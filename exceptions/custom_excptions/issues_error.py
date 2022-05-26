@@ -1,7 +1,8 @@
 from exceptions.custom_errors import CustomErrorEnum, ErrorType, CustomError
+from rest_framework.exceptions import APIException
 
 
-class IssuesError(CustomErrorEnum, Exception):
+class IssuesError(CustomErrorEnum, APIException):
     ErrNoneTitle = CustomError(
         "动态没有标题",
         "EI001",

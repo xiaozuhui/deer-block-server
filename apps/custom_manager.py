@@ -23,6 +23,7 @@ class LogicDeleteModel(models.Model):
     is_delete = models.BooleanField(default=False, verbose_name="是否删除")
     # 逻辑删除的manager，大部分操作使用这个
     logic_objects = LogicDeleteModelManager()
+    objects = models.Manager()
 
     def delete(self, using=None, keep_parents=False):
         """重写数据库删除方法实现逻辑删除"""

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from apps.base_view import CustomViewBase, JsonResponse
 from exceptions.custom_excptions.cache_err import CacheRequestError as crerr
 from exceptions.custom_excptions.send_message import SendMessageError as smerr
+from exceptions.custom_excptions.user_error import UserError
 from utils import consts
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
@@ -28,12 +29,12 @@ class UserViewSet(CustomViewBase):
     """
     User TODO 需要对每个操作都进行验权
     """
-    queryset = User.logic_objects.all().order_by('-date_joined')
+    queryset = User.logic_objects.all()
     serializer_class = UserSerializer
 
 
 class ProfileViewSet(CustomViewBase):
-    queryset = UserProfile.logic_objects.all().order_by('id')
+    queryset = UserProfile.logic_objects.all()
     serializer_class = ProfileSerializer
 
     @action(methods=['get'], detail=False)
@@ -42,7 +43,9 @@ class ProfileViewSet(CustomViewBase):
         获取当前用户的profile
         """
         user = request.user
-        profile = UserProfile.logic_objects.filter(user__id=user.id)
+        profile = UserProfile.logic_objects.filter(user=user.id).first()
+        if not profile:
+            raise UserError
         serializer = self.get_serializer(profile)
         headers = self.get_success_headers(serializer.data)
         return JsonResponse(status=http.HTTPStatus.OK,

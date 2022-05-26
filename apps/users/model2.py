@@ -3,7 +3,6 @@ from .models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import logging
-from django.contrib.auth import get_user_model
 from django.db import models
 
 from apps.consts import UserGender
@@ -48,6 +47,14 @@ class UserProfile(BaseModel):
     @property
     def phone_number(self):
         return self.user.phone_number
+
+    @property
+    def current_user_id(self):
+        return self.user.id
+
+    @property
+    def username(self):
+        return self.user.username
 
 
 @receiver(post_save, sender=User, dispatch_uid="user_post_save")
