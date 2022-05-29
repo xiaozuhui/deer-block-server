@@ -37,3 +37,10 @@ class IssuesError(CustomErrorEnum, APIException):
         ErrorType.ISSUES,
         ""
     )
+
+    ErrNoThumbUp = CustomError(
+        "不能取消点赞",
+        "EI006",
+        ErrorType.ISSUES,
+        ""
+    )

@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from apps.users.views import LogoutView, RegisterView, SendMessageView
-
+import django.core.checks
 from deer_block import settings
 
 urlpatterns = [
@@ -26,7 +26,7 @@ urlpatterns = [
     path(r"medias/", include("apps.media.urls")),
     path(r'user/', include('apps.users.urls')),
     path(r'square/', include('apps.square.urls')),
-
+    path(r'buss/', include('apps.bussiness.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

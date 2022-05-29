@@ -7,9 +7,7 @@ app_name = "square"
 
 router_v1 = routers.SimpleRouter()
 router_v1.register(r'issues', views.IssuesViewSet)
-router_v1.register(r'collection', views.CollectionViewSet)
 router_v1.register(r'reply', views.ReplyViewSet)
-router_v1.register(r'thumb_up', views.ThumbsUpViewSet)
 
 
 urlpatterns = [

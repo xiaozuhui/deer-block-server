@@ -16,15 +16,3 @@ class ReplyAdmin(admin.ModelAdmin):
     list_display = ('id', 'issues', 'reply', 'publisher', 'is_delete')
     list_filter = ('publisher', 'issues__title',)
     list_per_page = 20
-
-
-@admin.register(models.Collection)
-class CollectionAdmin(admin.ModelAdmin):
-    list_display = ('publisher', 'issues')
-    list_per_page = 20
-
-
-@admin.register(models.ThumbsUp)
-class ThumbsUpAdmin(admin.ModelAdmin):
-    list_display = ('publisher', 'issues')
-    list_per_page = 20

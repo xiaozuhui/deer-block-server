@@ -1,4 +1,5 @@
-import datetime
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from typing import List
 from django.db import models
 from apps import custom_manager
@@ -18,15 +19,54 @@ class BaseModel(custom_manager.LogicDeleteModel):
     class Meta:
         abstract = True
 
-    @staticmethod
-    def compare(request_data, model_intance, compare_items: List[str]):
-        """对比request.Data和对应的model_data之间的数据比较
-        """
-        for compare_item in compare_items:
-            item = request_data.get(compare_item, None)
-            if not hasattr(model_intance, compare_item):
-                return False
-            model_item = getattr(model_intance, compare_item)
-            if item != model_item:
-                return False
-        return True
+
+class GenericModel(BaseModel):
+    """通用类
+    """
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
+
+    @classmethod
+    def get_instances(cls, obj):
+        obj_model_ct = ContentType.objects.get_for_model(obj)
+        inses = cls.logic_objects.filter(
+            content_type=obj_model_ct, object_id=obj.id)
+        return inses
+
+    @classmethod
+    def get_count(cls, obj):
+        obj_model_ct = ContentType.objects.get_for_model(obj)
+        count = cls.logic_objects.filter(
+            content_type=obj_model_ct, object_id=obj.id).count()
+        return count
+
+    @classmethod
+    def create_instance(cls, obj, *args, **kwargs):
+        ins = cls(content_object=obj, *args, **kwargs)
+        ins.save()
+        return ins
+
+    class Meta:
+        abstract = True
+
+
+class CanShare(models.Model):
+    """能够被分享的模型interface
+    """
+    class Meta:
+        abstract = True
+
+
+class CanCollection(models.Model):
+    """能够被收藏的模型interface
+    """
+    class Meta:
+        abstract = True
+
+
+class CanThumbup(models.Model):
+    """能够被点赞的模型interface
+    """
+    class Meta:
+        abstract = True
