@@ -4,6 +4,8 @@ from rest_framework import viewsets
 from rest_framework import status as status_
 from rest_framework.response import Response
 import logging
+from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +24,21 @@ class JsonResponse(Response):
 
 
 class CustomViewBase(viewsets.ModelViewSet):
-    queryset = ''
-    serializer_class = ''
-    permission_classes = ()
-    filter_fields = ()
-    search_fields = ()
+    permission_classes = (IsAuthenticated)
     filter_backends = (rf.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter,)
+    permission_classes_by_action = {
+        'list': [AllowAny],
+        'retrieve': [AllowAny],
+        'default': [IsAuthenticated]
+    }
+
+    def get_permissions(self):
+        try:
+            return [permission() for permission in self.permission_classes_by_action[self.action]]
+        except KeyError:
+            # 没用明确权限的话使用默认权限
+            return [permission() for permission in self.permission_classes_by_action['default']]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
