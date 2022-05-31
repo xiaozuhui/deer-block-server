@@ -7,6 +7,8 @@ from apps.square.models import Issues, Reply
 from apps.square.serializers import IssuesSerializer, ReplySerializer
 from apps.base_view import CustomViewBase, JsonResponse
 import http
+from exceptions.custom_excptions.business_error import BusinessError
+from rest_framework.permissions import IsAuthenticated
 
 from exceptions.custom_excptions.issues_error import IssuesError
 
@@ -26,6 +28,7 @@ class IssuesViewSet(SquareBaseViewSet):
     queryset = Issues.logic_objects.all().order_by('-created_at')
     serializer_class = IssuesSerializer
     filter_fields = ('id', 'title', 'status', 'publisher')
+    permission_classes = [IsAuthenticated]
 
     @action(methods=['get'], detail=False)
     def user_list(self, request, *args, **kwargs):
@@ -120,17 +123,16 @@ class IssuesViewSet(SquareBaseViewSet):
         # 3、如果不存在点赞，则不能删除
         issues = self.get_object()  # 获取到对应的issues
         user = request.user  # 获取登录的用户
-        tp = ThumbUp.get_instances(issues).filter(
-            tper__id=user.id).first()  # 如果不存在，则为[]
+        tp = issues.get_thumbup(user)  # 如果不存在，则为[]
         data = []
         if request.method == 'POST':
             if not tp:
-                tp = ThumbUp.create_instance(issues, tper=user)
+                tp = issues.create_thumbsup(user)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
             if not tp:
-                raise IssuesError.ErrNoThumbUp
-            tp.delete()
+                raise BusinessError.ErrNoThumbUp
+            issues.delete_thumbsup(user)
         elif request.method == 'GET':
             data = ThumbUpSerializer(tp).data
         return JsonResponse(data=data, msg="OK", code=0, status=200)

@@ -29,6 +29,12 @@ class UserProfile(BaseModel):
                         blank=True,
                         related_name="user_avatar")
     birthday = models.DateField(null=True, blank=True, verbose_name='生日')
+    city = models.CharField(max_length=50, blank=True,
+                            null=True, verbose_name="城市")
+    address = models.CharField(
+        max_length=215, blank=True, null=True, verbose_name="地址")
+    signature = models.CharField(
+        max_length=215, verbose_name="签名", blank=True, null=True)
 
     # 关注与被关注
     follow = models.ManyToManyField(

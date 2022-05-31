@@ -1,8 +1,9 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from typing import List
 from django.db import models
+
 from apps import custom_manager
+
 
 
 class BaseModel(custom_manager.LogicDeleteModel):
@@ -51,22 +52,5 @@ class GenericModel(BaseModel):
         abstract = True
 
 
-class CanShare(models.Model):
-    """能够被分享的模型interface
-    """
-    class Meta:
-        abstract = True
 
 
-class CanCollection(models.Model):
-    """能够被收藏的模型interface
-    """
-    class Meta:
-        abstract = True
-
-
-class CanThumbup(models.Model):
-    """能够被点赞的模型interface
-    """
-    class Meta:
-        abstract = True
