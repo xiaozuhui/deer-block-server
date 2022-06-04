@@ -25,4 +25,5 @@ class FileType(TextChoices):
     NONE = "", "无类型"
     VIDEO = "video", "视频"
     IMAGE = "image", "图像"
-    FILE = "file", "文件"
+    AUDIO = "audio", "音频"
+    OTHER = "other", "其他"

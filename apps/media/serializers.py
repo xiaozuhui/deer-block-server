@@ -39,11 +39,15 @@ class FileStorageSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "uuid": {"required": False},
             "filename": {"required": True, "allow_null": False},
+            "file_type": {"required": False, "allow_null": True},
+            "file_extension": {"required": False, "allow_null": True},
+            "mime_type": {"required": False, "allow_null": True},
         }
 
     def get_file_url(self, file):
         url = file.file_url
         minio_ip = os.environ.get("MINIO_IP", "localhost")
-        minio_port = os.environ.get("MINIO_PORT", "19090")  # 默认为19090端口，内部端口为9000
+        minio_port = os.environ.get(
+            "MINIO_PORT", "19090")  # 默认为19090端口，内部端口为9000
         url = url.replace('minio', minio_ip).replace(':9000', ":"+minio_port)
         return url
