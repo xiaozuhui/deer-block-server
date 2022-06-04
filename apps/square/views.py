@@ -1,12 +1,12 @@
 from rest_framework.decorators import action
 from rest_framework import status
-from apps.bussiness.models import ThumbUp
-from apps.bussiness.serializers import ThumbUpSerializer
+from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer
 from apps.consts import PublishStatus
 from apps.square.models import Issues, Reply
 from apps.square.serializers import IssuesSerializer, ReplySerializer
 from apps.base_view import CustomViewBase, JsonResponse
 import http
+from apps.users.model2 import UserProfile
 from exceptions.custom_excptions.business_error import BusinessError
 from rest_framework.permissions import IsAuthenticated
 
@@ -17,6 +17,9 @@ class SquareBaseViewSet(CustomViewBase):
     def create(self, request, *args, **kwargs):
         data_ = request.data.copy()
         data_["publisher"] = request.user.id
+        if not data_["ip"]:
+            profile = UserProfile.logic_objects.filter(user=request.user).first()
+            data_["ip"] = profile.ip
         serializer = self.get_serializer(data=data_)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -149,12 +152,22 @@ class IssuesViewSet(SquareBaseViewSet):
     @action(methods=['post', 'get'], detail=True)
     def share(self, request, *args, **kwargs):
         """创建分享链接
-        如果已经创建了分享，那么就从数据库中直接取出
-        如果没有，则先创建在获取
-        不能删除分享链接
+        每一次获取分享链接，就是创建一条新的分享数据
+        获取分享链接时，应该将该动态所有的分享链接全部拿出来
         """
-        pass
+        issues = self.get_object()  # 获取到对应的issues
+        user = request.user  # 获取登录的用户
 
+        if request.method == 'POST':
+            share_url = request.data.get('share_url', "") # 分享的链接
+            share_type = request.data.get('share_type', "") # 分享的类型，或者是分享的路径，比如微信分享、QQ分享
+            share = issues.create_share(user, share_url=share_url, share_type=share_type)
+            data = ShareSerializer(share).data
+        elif request.method == 'GET':
+            shares = issues.get_all_share()
+            data = ShareSerializer(shares, many=True).data
+        
+        return JsonResponse(data=data, msg="OK", code=0, status=200)
 
 class ReplyViewSet(SquareBaseViewSet):
     queryset = Reply.logic_objects.all().order_by('-updated_at')

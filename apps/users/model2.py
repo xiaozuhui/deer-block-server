@@ -41,6 +41,9 @@ class UserProfile(BaseModel):
         User, related_name="user_follow", verbose_name='关注', blank=True)
     followed = models.ManyToManyField(
         User, related_name="user_followed", verbose_name='被关注', blank=True)
+    
+    ip = models.GenericIPAddressField(
+        verbose_name="注册时ip地址", blank=True, null=True)
 
     class Meta:
         verbose_name = "个人信息"

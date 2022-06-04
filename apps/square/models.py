@@ -1,3 +1,4 @@
+from ipaddress import ip_address
 from django.db import models
 from apps.base_model import BaseModel
 from apps.bussiness.models import Category, Tag
@@ -32,6 +33,9 @@ class Issues(BaseModel, CanShare, CanCollection, CanThumbup):
     tags = models.ManyToManyField(Tag, verbose_name="标签", blank=True)
     categories = models.ManyToManyField(
         Category, verbose_name="分类", blank=True)
+    # 发布时的ip地址
+    ip = models.GenericIPAddressField(
+        verbose_name="发布时ip地址", blank=True, null=True)
 
     class Meta:
         verbose_name = "动态"

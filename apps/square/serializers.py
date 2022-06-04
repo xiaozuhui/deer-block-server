@@ -29,6 +29,7 @@ class IssuesSerializer(serializers.ModelSerializer):
         fields = "__all__"
         extra_kwargs = {
             "id": {"required": False, "allow_null": True},
+            "ip": {"required": False, "allow_null": True},
             "title": {"required": True, "allow_null": False},
             "publisher": {"required": False, "allow_null": True},
             "medias": {"required": False, "allow_null": True},

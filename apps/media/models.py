@@ -1,6 +1,7 @@
 from uuid import uuid4
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from apps.consts import FileType
 from apps.users.models import User
 import utils.base_tools as tools
 
@@ -48,6 +49,15 @@ class FileStorage(models.Model):
     file = models.FileField(verbose_name="文件", upload_to="")
     sequence = models.IntegerField(verbose_name="顺序", default=0)
     is_private = models.BooleanField(verbose_name="是否私有", default=False)
+    # 文件类型相关字段
+    file_type = models.CharField(max_length=20,
+                                 verbose_name="文件类型",
+                                 choices=FileType.choices,
+                                 default=FileType.NONE)
+    file_extension = models.CharField(
+        max_length=20, blank=True, null=True, verbose_name="文件后缀")
+    mime_type = models.CharField(
+        max_length=215, blank=True, null=True, verbose_name="内部类型")
 
     class Meta:
         verbose_name = "文件"
@@ -82,3 +92,14 @@ class FileStorage(models.Model):
 
     def f_size(self):
         return self.file.size
+
+    @classmethod
+    def pares_file_type(cls, m_type):
+        if m_type == "video":
+            return FileType.VIDEO
+        elif m_type == "audio":
+            return FileType.AUDIO
+        elif m_type == "image":
+            return FileType.IMAGE
+        else:
+            return FileType.OTHER

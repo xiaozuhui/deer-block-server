@@ -20,6 +20,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = model2.UserProfile
         fields = '__all__'
+        extra_kwargs = {
+            "ip": {"required": False, "allow_null": True},
+        }
 
 
 class BlackTokenSerializer(serializers.Serializer):
