@@ -39,6 +39,7 @@ class IssuesSerializer(serializers.ModelSerializer):
             "version": {"required": False, "allow_null": True},
             "tags": {"required": False, "allow_null": True},
             "categories": {"required": False, "allow_null": True},
+            "is_vedio_issues": {"required": False, "allow_null": True},
         }
 
     def get_collections(self, issues):

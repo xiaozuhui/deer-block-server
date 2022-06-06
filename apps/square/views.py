@@ -6,9 +6,9 @@ from apps.square.models import Issues, Reply
 from apps.square.serializers import IssuesSerializer, ReplySerializer
 from apps.base_view import CustomViewBase, JsonResponse
 import http
-from apps.users.model2 import UserProfile
 from exceptions.custom_excptions.business_error import BusinessError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 from exceptions.custom_excptions.issues_error import IssuesError
 
@@ -17,9 +17,11 @@ class SquareBaseViewSet(CustomViewBase):
     def create(self, request, *args, **kwargs):
         data_ = request.data.copy()
         data_["publisher"] = request.user.id
-        if not data_["ip"]:
-            profile = UserProfile.logic_objects.filter(user=request.user).first()
-            data_["ip"] = profile.ip
+        if request.META.get('HTTP_X_FORWARDED_FOR'):
+            ip = request.META.get("HTTP_X_FORWARDED_FOR")
+        else:
+            ip = ""
+        data_["ip"] = ip
         serializer = self.get_serializer(data=data_)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -32,6 +34,12 @@ class IssuesViewSet(SquareBaseViewSet):
     serializer_class = IssuesSerializer
     filter_fields = ('id', 'title', 'status', 'publisher')
     permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'list': [AllowAny],
+        'retrieve': [AllowAny],
+        'default': [IsAuthenticated], 
+        "vedio_list": [AllowAny],
+    }
 
     @action(methods=['get'], detail=False)
     def user_list(self, request, *args, **kwargs):
@@ -84,6 +92,11 @@ class IssuesViewSet(SquareBaseViewSet):
         """
         data_ = request.data.copy()
         data_["publisher"] = request.user.id
+        if request.META.get('HTTP_X_FORWARDED_FOR'):
+            ip = request.META.get("HTTP_X_FORWARDED_FOR")
+        else:
+            ip = ""
+        data_["ip"] = ip
         data_["status"] = PublishStatus.PUBLISHED
         serializer = self.get_serializer(data=data_)
         serializer.is_valid(raise_exception=True)
@@ -106,6 +119,11 @@ class IssuesViewSet(SquareBaseViewSet):
         instance.save()  # 推荐使用save，这样可以记录保存时间
         data_ = request.data.copy()
         data_["publisher"] = request.user.id
+        if request.META.get('HTTP_X_FORWARDED_FOR'):
+            ip = request.META.get("HTTP_X_FORWARDED_FOR")
+        else:
+            ip = ""
+        data_["ip"] = ip
         # 如果原本的数据有origin，则使用origin，否则就使用issues的id
         data_["origin"] = instance.origin.id if instance.origin else instance.id
         data_["version"] = instance.version + 1
@@ -159,15 +177,29 @@ class IssuesViewSet(SquareBaseViewSet):
         user = request.user  # 获取登录的用户
 
         if request.method == 'POST':
-            share_url = request.data.get('share_url', "") # 分享的链接
-            share_type = request.data.get('share_type', "") # 分享的类型，或者是分享的路径，比如微信分享、QQ分享
-            share = issues.create_share(user, share_url=share_url, share_type=share_type)
+            share_url = request.data.get('share_url', "")  # 分享的链接
+            # 分享的类型，或者是分享的路径，比如微信分享、QQ分享
+            share_type = request.data.get('share_type', "")
+            share = issues.create_share(
+                user, share_url=share_url, share_type=share_type)
             data = ShareSerializer(share).data
         elif request.method == 'GET':
             shares = issues.get_all_share()
             data = ShareSerializer(shares, many=True).data
-        
         return JsonResponse(data=data, msg="OK", code=0, status=200)
+
+    @action(methods=['get'], detail=False)
+    def vedio_list(self, request, *args, **kwargs):
+        """获取视频动态
+        TODO 应该根据热度来控制，下一个视频动态是什么
+        因为目前的问题，所以不适合使用热度来控制，于是我们可以将视频动态全部获取，然后随机给用户
+        在这里，因为每一次请求的视频动态应该是不同的，所以我们需要使用缓存来控制
+        每一次请求的视频动态都丢进缓存，除非溢出，则重新随机，否则就不再从缓存中获取
+        Args:
+            request (_type_): _description_
+        """
+        pass
+
 
 class ReplyViewSet(SquareBaseViewSet):
     queryset = Reply.logic_objects.all().order_by('-updated_at')
