@@ -36,6 +36,9 @@ class Issues(BaseModel, CanShare, CanCollection, CanThumbup):
     # 发布时的ip地址
     ip = models.GenericIPAddressField(
         verbose_name="发布时ip地址", blank=True, null=True)
+    
+    # 标识这个issues是不是纯粹的视频动态
+    is_vedio_issues = models.BooleanField(verbose_name="是否是视频动态", default=False)
 
     class Meta:
         verbose_name = "动态"
