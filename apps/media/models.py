@@ -26,6 +26,7 @@ class File(models.Model):
         verbose_name = "基础文件管理"
         verbose_name_plural = verbose_name
         db_table = "file"
+        ordering = ['upload_time']
 
     @property
     def file_size(self):

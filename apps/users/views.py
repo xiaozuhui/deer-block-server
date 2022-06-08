@@ -22,7 +22,7 @@ from .models import User
 from .model2 import UserProfile
 from .serializers import MobileSendMessageSerializer, RegisterSerializer, UserSerializer, ProfileSerializer, BlackTokenSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class UserViewSet(CustomViewBase):

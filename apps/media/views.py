@@ -8,7 +8,7 @@ from apps.base_view import CustomViewBase, JsonResponse
 from apps.media import models
 from apps.media.serializers import FileSerializer, FileStorageSerializer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class FileModelViewSet(CustomViewBase):

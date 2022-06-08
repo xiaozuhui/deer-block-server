@@ -82,14 +82,6 @@ DATABASES = {
         'HOST': 'db',
         'PORT': '5432',
     },
-    'dev': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '123456',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    },
 }
 
 # redis配置
@@ -102,14 +94,6 @@ CACHES = {
             "CONNECTION_POOL_KWARGS": {"max_connections": 100}
         }
     },
-    'dev': {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "127.0.0.1:6379/0",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "CONNECTION_POOL_KWARGS": {"max_connections": 100}
-        }
-    }
 }
 
 # redis缓存时间
