@@ -139,3 +139,4 @@ cython_debug/
 
 # 这个配置暂时不需要修改
 ./deer_block/settings.py
+deer_block/settings.py

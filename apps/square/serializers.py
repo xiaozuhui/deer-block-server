@@ -44,12 +44,10 @@ class IssuesSerializer(serializers.ModelSerializer):
 
     def get_collections(self, issues):
         collections = Collection.get_instances(issues)
-        # collections = Collection.logic_objects.filter(issues__id=issues.id)
         return CollectionSerializer(collections, many=True).data
 
     def get_thumbs_up(self, issues):
         thumbs_ups = ThumbUp.get_instances(issues)
-        # thumbs_up = ThumbUp.logic_objects.filter(issues__id=issues.id)
         return ThumbUpSerializer(thumbs_ups, many=True).data
 
     def get_replies(self, issues):
@@ -61,12 +59,10 @@ class IssuesSerializer(serializers.ModelSerializer):
         return FileSerializer(fs, many=True).data
 
     def get_collection_count(self, issues):
-        # count = Collection.logic_objects.filter(issues__id=issues.id).count()
         count = Collection.get_count(issues)
         return count
 
     def get_thumbs_up_count(self, issues):
-        # count = ThumbUp.logic_objects.filter(issues__id=issues.id).count()
         count = ThumbUp.get_count(issues)
         return count
 
@@ -75,12 +71,10 @@ class IssuesSerializer(serializers.ModelSerializer):
         return count
 
     def get_shares(self, issues):
-        # sahres = Share.logic_objects.filter(issues__id=issues.id)
         sahres = Share.get_instances(issues)
         return ShareSerializer(sahres, many=True).data
 
     def get_share_count(self, issues):
-        # count = Share.logic_objects.filter(issues__id=issues.id).count()
         count = Share.get_count(issues)
         return count
 
@@ -103,6 +97,7 @@ class ReplySerializer(serializers.ModelSerializer):
             "id": {"required": False, "allow_null": True},
             "medias": {"required": False, "allow_null": True},
             "publisher": {"required": False, "allow_null": True},
+            "ip": {"required": False, "allow_null": True},
         }
 
     def get_thumbs_up(self, reply):
