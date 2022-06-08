@@ -6,7 +6,7 @@ from rest_framework.views import exception_handler
 
 from exceptions.custom_errors import CustomError
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 def custom_exception_handler(exc, context):

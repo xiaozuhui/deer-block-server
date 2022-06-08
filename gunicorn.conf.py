@@ -17,4 +17,4 @@ worker_class = 'gevent'
 worker_connections = 2000
 
 # 设置日志记录水平
-loglevel = 'warning'
+loglevel = 'info'

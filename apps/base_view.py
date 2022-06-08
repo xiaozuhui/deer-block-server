@@ -7,7 +7,7 @@ import logging
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class JsonResponse(Response):

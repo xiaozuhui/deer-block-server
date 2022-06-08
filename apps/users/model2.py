@@ -8,7 +8,7 @@ from django.db import models
 from apps.consts import UserGender
 from apps.custom_models import ImageField
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class UserProfile(BaseModel):
