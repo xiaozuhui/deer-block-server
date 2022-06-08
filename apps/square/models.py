@@ -69,6 +69,8 @@ class Reply(BaseModel, CanThumbup):
         User, verbose_name="回复者", on_delete=models.DO_NOTHING)
     content = models.TextField(verbose_name="回复内容")
     medias = models.ManyToManyField(File, verbose_name="图片和视频")
+    ip = models.GenericIPAddressField(
+        verbose_name="评论时ip地址", blank=True, null=True)
 
     class Meta:
         verbose_name = "动态回复"

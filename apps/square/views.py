@@ -1,15 +1,16 @@
-from rest_framework.decorators import action
+import http
+
 from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
+
+from apps.base_view import CustomViewBase, JsonResponse
 from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer
 from apps.consts import PublishStatus
 from apps.square.models import Issues, Reply
 from apps.square.serializers import IssuesSerializer, ReplySerializer
-from apps.base_view import CustomViewBase, JsonResponse
-import http
 from exceptions.custom_excptions.business_error import BusinessError
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import AllowAny
-
 from exceptions.custom_excptions.issues_error import IssuesError
 
 
@@ -20,8 +21,9 @@ class SquareBaseViewSet(CustomViewBase):
         if request.META.get('HTTP_X_FORWARDED_FOR'):
             ip = request.META.get("HTTP_X_FORWARDED_FOR")
         else:
-            ip = ""
-        data_["ip"] = ip
+            ip = request.data.get('ip', "")
+        if ip:
+            data_["ip"] = ip
         serializer = self.get_serializer(data=data_)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -62,10 +64,10 @@ class IssuesViewSet(SquareBaseViewSet):
     @action(methods=['post'], detail=False)
     def publishing(self, request, *args, **kwargs):
         user = request.user
-        id = request.data.get('id', None)  # 存在这个就需要发布，否则就是创建(创建的时候就是发布)
-        if id:
+        id_ = request.data.get('id', None)  # 存在这个就需要发布，否则就是创建(创建的时候就是发布)
+        if id_:
             issues = Issues.logic_objects.filter(
-                publisher__id=user.id, id=id).first()  # 如果搜索不到，就报错
+                publisher__id=user.id, id=id_).first()  # 如果搜索不到，就报错
             if issues:
                 # 更新 - 发布
                 if issues.status == PublishStatus.PUBLISHED:
@@ -75,6 +77,12 @@ class IssuesViewSet(SquareBaseViewSet):
                 data_ = request.data.copy()
                 partial = kwargs.pop('partial', False)
                 data_["status"] = PublishStatus.PUBLISHED
+                if request.META.get('HTTP_X_FORWARDED_FOR'):
+                    ip = request.META.get("HTTP_X_FORWARDED_FOR")
+                else:
+                    ip = request.data.get('ip', "")
+                if ip:
+                    data_["ip"] = ip
                 serializer = self.get_serializer(
                     issues, data=data_, partial=partial)
                 serializer.is_valid(raise_exception=True)
@@ -95,8 +103,9 @@ class IssuesViewSet(SquareBaseViewSet):
         if request.META.get('HTTP_X_FORWARDED_FOR'):
             ip = request.META.get("HTTP_X_FORWARDED_FOR")
         else:
-            ip = ""
-        data_["ip"] = ip
+            ip = request.data.get('ip', "")
+        if ip:
+            data_["ip"] = ip
         data_["status"] = PublishStatus.PUBLISHED
         serializer = self.get_serializer(data=data_)
         serializer.is_valid(raise_exception=True)
@@ -122,8 +131,9 @@ class IssuesViewSet(SquareBaseViewSet):
         if request.META.get('HTTP_X_FORWARDED_FOR'):
             ip = request.META.get("HTTP_X_FORWARDED_FOR")
         else:
-            ip = ""
-        data_["ip"] = ip
+            ip = request.data.get('ip', "")
+        if ip:
+            data_["ip"] = ip
         # 如果原本的数据有origin，则使用origin，否则就使用issues的id
         data_["origin"] = instance.origin.id if instance.origin else instance.id
         data_["version"] = instance.version + 1
@@ -175,7 +185,7 @@ class IssuesViewSet(SquareBaseViewSet):
         """
         issues = self.get_object()  # 获取到对应的issues
         user = request.user  # 获取登录的用户
-
+        data = []
         if request.method == 'POST':
             share_url = request.data.get('share_url', "")  # 分享的链接
             # 分享的类型，或者是分享的路径，比如微信分享、QQ分享

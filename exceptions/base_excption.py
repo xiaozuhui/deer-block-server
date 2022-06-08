@@ -1,7 +1,8 @@
 import http
 import logging
-from rest_framework.views import exception_handler
+
 from rest_framework.response import Response
+from rest_framework.views import exception_handler
 
 from exceptions.custom_errors import CustomError
 
@@ -17,7 +18,10 @@ def custom_exception_handler(exc, context):
         if isinstance(exc, CustomError):
             error_dict = exc.to_serializer()
             response.data.update(error_dict)
+        else:
+            response.data["message"] = str(exc)
     else:
-        response = Response(data={"status_code": http.HTTPStatus.INTERNAL_SERVER_ERROR, "code": -1, "message": str(exc)},
-                            status=http.HTTPStatus.INTERNAL_SERVER_ERROR)
+        response = Response(
+            data={"status_code": http.HTTPStatus.INTERNAL_SERVER_ERROR, "code": -1, "message": str(exc)},
+            status=http.HTTPStatus.INTERNAL_SERVER_ERROR)
     return response

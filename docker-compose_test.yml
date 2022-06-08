@@ -33,8 +33,8 @@ services:
       MINIO_ACCESS_KEY: root
       MINIO_SECRET_KEY: 1qazXDR%?
     volumes:
-      - /docker/minio/data:/data #映射当前目录下的data目录至容器内/data目录
-      - /docker/minio/config:/root/.minio/ #映射配置目录
+      - /var/data/minio/data:/data #映射当前目录下的data目录至容器内/data目录
+      - /var/data/minio/config:/root/.minio/ #映射配置目录
     privileged: true
     restart: always
   deerblock:
