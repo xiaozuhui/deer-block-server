@@ -1,6 +1,6 @@
 from django.db import models
-from apps.bussiness.models import Share
 
+from apps.bussiness.models import Share
 from exceptions.custom_excptions.business_error import BusinessError
 
 

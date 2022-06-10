@@ -1,6 +1,7 @@
+from django.db import models
+
 from apps.bussiness.models import ThumbUp
 from exceptions.custom_excptions.business_error import BusinessError
-from django.db import models
 
 
 class CanThumbup(models.Model):

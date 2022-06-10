@@ -17,6 +17,29 @@
 - shop 商城模块
 
 
+## 配置项
+这个配置项是环境变量，主要是用于本地运行程序
+可以根据自己的需要修改里面的配置
+```
+POSTGRES_NAME=deer_block;
+POSTGRES_USER=postgres;
+POSTGRES_PASSWORD=123456;
+POSTGRES_HOST=localhost;
+POSTGRES_PORT=15432;
+CACHE_LOCATION_IP=localhost;
+CACHE_LOCATION_PORT=16379;
+SEND_MESSAGE_ACCESS_KEY=LTAI5tKqWQhoEfRhyJKc15yW;
+SEND_MESSAGE_ACCESS_SECRET=FGhlSPqkSE7qmZksPUYya762j2AdaR;
+SEND_MSG_MODE=aliyun;
+SIGN_NAME=阿里云短信测试;
+TEMPLATE_CODE=SMS_154950909;
+MINIO_IP=localhost;
+MINIO_PORT=19090;
+MINIO_SET_IP=localhost;
+MINIO_SET_PORT=19090;
+MINIO_STORAGE_ACCESS_KEY=root
+```
+
 
 ## 技术支持
 [![simpleui](https://img.shields.io/badge/developing%20with-Simpleui-2077ff.svg)](https://github.com/newpanjing/simpleui)

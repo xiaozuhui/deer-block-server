@@ -1,12 +1,12 @@
 import http
-import uuid
 import logging
+import uuid
+
 import filetype
 
 from apps.base_view import CustomViewBase, JsonResponse
-
 from apps.media import models
-from apps.media.serializers import FileSerializer, FileStorageSerializer
+from apps.media.serializers import FileSerializer
 
 logger = logging.getLogger('django')
 
