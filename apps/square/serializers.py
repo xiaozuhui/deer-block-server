@@ -39,7 +39,7 @@ class IssuesSerializer(serializers.ModelSerializer):
             "version": {"required": False, "allow_null": True},
             "tags": {"required": False, "allow_null": True},
             "categories": {"required": False, "allow_null": True},
-            "is_vedio_issues": {"required": False, "allow_null": True},
+            "is_video_issues": {"required": False, "allow_null": True},
         }
 
     def get_collections(self, issues):
@@ -83,7 +83,7 @@ class ReplySerializer(serializers.ModelSerializer):
     thumbs_up = serializers.SerializerMethodField()
     thumbs_up_count = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
-    media_detial = serializers.SerializerMethodField()
+    media_detail = serializers.SerializerMethodField()
 
     publisher_id = serializers.CharField(
         read_only=True, source="publisher.id")
@@ -112,6 +112,6 @@ class ReplySerializer(serializers.ModelSerializer):
         replies = Reply.logic_objects.filter(reply__id=reply.id)
         return ReplySerializer(replies, many=True).data
 
-    def get_media_detial(self, reply):
+    def get_media_detall(self, reply):
         fs = reply.medias
         return FileSerializer(fs, many=True).data
