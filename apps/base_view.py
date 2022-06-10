@@ -1,11 +1,12 @@
+import logging
+
 from django_filters import rest_framework as rf
 from rest_framework import filters
-from rest_framework import viewsets
 from rest_framework import status as status_
-from rest_framework.response import Response
-import logging
+from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 logger = logging.getLogger('django')
 
@@ -14,7 +15,9 @@ class JsonResponse(Response):
     """自定义Response
     """
 
-    def __init__(self, data={}, code=0, msg="OK", status=200, headers=None, content_type=None):
+    def __init__(self, data=None, code=0, msg="OK", status=200, headers=None, content_type=None):
+        if data is None:
+            data = {}
         logger.info("headers: {}\ncontent_type: {}\n".format(
             str(headers), str(content_type)))
         super(Response, self).__init__(None, status=status)
@@ -24,7 +27,7 @@ class JsonResponse(Response):
 
 
 class CustomViewBase(viewsets.ModelViewSet):
-    permission_classes = (IsAuthenticated)
+    permission_classes = [IsAuthenticated]
     filter_backends = (rf.DjangoFilterBackend,
                        filters.SearchFilter, filters.OrderingFilter,)
     permission_classes_by_action = {

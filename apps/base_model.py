@@ -5,7 +5,6 @@ from django.db import models
 from apps import custom_manager
 
 
-
 class BaseModel(custom_manager.LogicDeleteModel):
     """
     基础模型，继承django的模型和逻辑删除主模型
@@ -50,7 +49,3 @@ class GenericModel(BaseModel):
 
     class Meta:
         abstract = True
-
-
-
-

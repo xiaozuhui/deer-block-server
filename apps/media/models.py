@@ -1,9 +1,11 @@
 from uuid import uuid4
-from django.db import models
+
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
+
+import utils.base_tools as tools
 from apps.consts import FileType
 from apps.users.models import User
-import utils.base_tools as tools
 
 
 def default_array():

@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
-from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer
+from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer
 from apps.consts import PublishStatus
 from apps.square.models import Issues, Reply
 from apps.square.serializers import IssuesSerializer, ReplySerializer
@@ -21,7 +21,7 @@ class SquareBaseViewSet(CustomViewBase):
         if request.META.get('HTTP_X_FORWARDED_FOR'):
             ip = request.META.get("HTTP_X_FORWARDED_FOR")
         else:
-            ip = request.data.get('ip', "")
+            ip = request.data.get('ip', None)
         if ip:
             data_["ip"] = ip
         serializer = self.get_serializer(data=data_)
@@ -39,8 +39,8 @@ class IssuesViewSet(SquareBaseViewSet):
     permission_classes_by_action = {
         'list': [AllowAny],
         'retrieve': [AllowAny],
-        'default': [IsAuthenticated], 
-        "vedio_list": [AllowAny],
+        'default': [IsAuthenticated],
+        "video_list": [AllowAny],
     }
 
     @action(methods=['get'], detail=False)
@@ -143,7 +143,7 @@ class IssuesViewSet(SquareBaseViewSet):
         return JsonResponse(data=serializer.data, msg="OK", code=0, status=http.HTTPStatus.OK)
 
     @action(methods=['post', 'get', 'delete'], detail=True)
-    def thumbsup(self, request, *args, **kwargs):
+    def thumbs_up(self, request, *args, **kwargs):
         """点赞
         post:  创建点赞
         get    获取点赞的详情
@@ -175,7 +175,21 @@ class IssuesViewSet(SquareBaseViewSet):
         get    获取收藏的详情
         delete 取消收藏
         """
-        pass
+        issues = self.get_object()  # 获取到对应的issues
+        user = request.user  # 获取登录的用户
+        coll = issues.get_collect(user)
+        data = []
+        if request.method == 'POST':
+            if not coll:
+                coll = issues.create_collect(user)
+            data = CollectionSerializer(coll).data
+        elif request.method == 'DELETE':
+            if not coll:
+                raise BusinessError.ErrNoThumbUp
+            issues.delete_thumbsup(user)
+        elif request.method == 'GET':
+            data = CollectionSerializer(coll).data
+        return JsonResponse(data=data, msg="OK", code=0, status=200)
 
     @action(methods=['post', 'get'], detail=True)
     def share(self, request, *args, **kwargs):
@@ -199,7 +213,7 @@ class IssuesViewSet(SquareBaseViewSet):
         return JsonResponse(data=data, msg="OK", code=0, status=200)
 
     @action(methods=['get'], detail=False)
-    def vedio_list(self, request, *args, **kwargs):
+    def video_list(self, request, *args, **kwargs):
         """获取视频动态
         TODO 应该根据热度来控制，下一个视频动态是什么
         因为目前的问题，所以不适合使用热度来控制，于是我们可以将视频动态全部获取，然后随机给用户

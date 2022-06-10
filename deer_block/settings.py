@@ -1,5 +1,5 @@
-from datetime import timedelta
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -10,6 +10,7 @@ SECRET_KEY = 'django-insecure-#kyxtl177*d)kv^+2xi5w!e)m-6bm%jg#(me7_3lrzpnfd=uh3
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+APPEND_SLASH = True
 
 # ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 ALLOWED_HOSTS = ['*']
@@ -77,11 +78,11 @@ WSGI_APPLICATION = 'deer_block.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get("POSTGRES_NAME"),
-        'USER': os.environ.get("POSTGRES_USER"),
-        'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
-        'HOST': 'db',
-        'PORT': '5432',
+        'NAME': os.environ.get("POSTGRES_NAME", 'deer_block'),
+        'USER': os.environ.get("POSTGRES_USER", 'postgres'),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD", '123456'),
+        'HOST': os.environ.get("POSTGRES_HOST", 'localhost'),
+        'PORT': os.environ.get("POSTGRES_PORT", '15432'),
     },
 }
 
@@ -89,7 +90,8 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/0",
+        "LOCATION": "redis://{}:{}/0".format(os.environ.get("CACHE_LOCATION_IP", '127.0.0.1'),
+                                             os.environ.get("CACHE_LOCATION_PORT", '16379')),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {"max_connections": 100}
@@ -99,7 +101,6 @@ CACHES = {
 
 # redis缓存时间
 REDIS_TIMEOUT = 60 * 60 * 24 * 15
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -150,9 +151,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # 用了oss后可能这个配置�
 
 # minio配置
 DEFAULT_FILE_STORAGE = "minio_storage.storage.MinioMediaStorage"
-MINIO_STORAGE_ENDPOINT = 'minio:9000'
-MINIO_STORAGE_ACCESS_KEY = 'root'
-MINIO_STORAGE_SECRET_KEY = '1qazXDR%?'
+MINIO_STORAGE_ENDPOINT = '{}:{}'.format(os.environ.get("MINIO_SET_IP"), os.environ.get("MINIO_SET_PORT"))
+MINIO_STORAGE_ACCESS_KEY = os.environ.get("MINIO_STORAGE_ACCESS_KEY")
+MINIO_STORAGE_SECRET_KEY = os.environ.get("MINIO_STORAGE_SECRET_KEY")
 MINIO_STORAGE_USE_HTTPS = False
 MINIO_STORAGE_MEDIA_BUCKET_NAME = 'media'
 MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
@@ -291,13 +292,13 @@ LOGGING = {
     },
 }
 
-
 SEND_MSG_MODE = os.environ.get("SEND_MSG_MODE")
 
 # 阿里云发送短信服务的子账号密码
 SEND_MESSAGE_ACCESS_KEY = os.environ.get("SEND_MESSAGE_ACCESS_KEY")
 SEND_MESSAGE_ACCESS_SECRET = os.environ.get("SEND_MESSAGE_ACCESS_SECRET")
 
+# 配置阿里云发送短信的模版、签名等，根据不同的功能配置不同的模版和签名
 ALI_SEND_CONFIG = {
     # register and login
     "ral": {
