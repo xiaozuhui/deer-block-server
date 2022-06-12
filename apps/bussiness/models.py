@@ -64,11 +64,11 @@ class Tag(BaseModel):
 
 
 class Category(BaseModel):
-    '''
+    """
     关于父级分类：
     在创建分类关联的时候，如果选择了二级分类，则需要将一级分类也关联，之后以此类推
     在ser中获取的时候，将实现一颗树
-    '''
+    """
     label = models.CharField(max_length=100, verbose_name="分类")
     parent_category = models.ForeignKey(
         'Category', verbose_name="父级分类", related_name="parent", on_delete=models.CASCADE)

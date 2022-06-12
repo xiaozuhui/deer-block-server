@@ -6,7 +6,7 @@ from django.db.models import QuerySet
 
 class LogicDeleteModelQuerySet(QuerySet):
     def delete(self):
-        self.update(is_delete=True, delete_at=datetime.datetime.now())
+        self.update(is_delete=True, deleted_at=datetime.datetime.now())
 
 
 class LogicDeleteModelManager(models.Manager):

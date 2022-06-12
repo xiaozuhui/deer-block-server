@@ -20,7 +20,8 @@ from utils.user_tools import get_user_name, get_user_password
 
 from .models import User
 from .model2 import UserProfile
-from .serializers import MobileSendMessageSerializer, RegisterSerializer, UserSerializer, ProfileSerializer, BlackTokenSerializer
+from .serializers import MobileSendMessageSerializer, RegisterSerializer, UserSerializer, ProfileSerializer, \
+    BlackTokenSerializer
 
 logger = logging.getLogger('django')
 
@@ -45,8 +46,48 @@ class ProfileViewSet(CustomViewBase):
         user = request.user
         profile = UserProfile.logic_objects.filter(user=user.id).first()
         if not profile:
-            raise UserError
+            raise UserError.ErrProfileNoExist
         serializer = self.get_serializer(profile)
+        headers = self.get_success_headers(serializer.data)
+        return JsonResponse(status=http.HTTPStatus.OK,
+                            data=serializer.data, headers=headers, msg="OK", code=0)
+
+    def create(self, request, *args, **kwargs):
+        """
+        重写create，增加user
+        """
+        user = request.user
+        profile = UserProfile.logic_objects.filter(user=user.id).first()
+        if profile:
+            raise UserError.ErrProfileHasExist
+        data_ = request.data.copy()
+        data_['user'] = user
+        serializer = self.get_serializer(data=data_)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return JsonResponse(status=http.HTTPStatus.OK,
+                            data=serializer.data, headers=headers, msg="OK", code=0)
+
+    def update(self, request, *args, **kwargs):
+        """
+        重写update，增加user
+        """
+        user = request.user
+        data_ = request.data.copy()
+        data_['user'] = user.id
+        if request.META.get('HTTP_X_FORWARDED_FOR'):
+            ip = request.META.get("HTTP_X_FORWARDED_FOR")
+        else:
+            ip = request.data.get('ip', None)
+        if ip:
+            data_["ip"] = ip
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=data_, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         headers = self.get_success_headers(serializer.data)
         return JsonResponse(status=http.HTTPStatus.OK,
                             data=serializer.data, headers=headers, msg="OK", code=0)
@@ -71,7 +112,6 @@ class LogoutView(GenericAPIView):
 
 
 class RegisterView(GenericAPIView):
-
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
@@ -214,5 +254,5 @@ class SendMessageView(GenericAPIView):
 
         # 发送信息，如果没有报错，说明信息正确发出
         self._send_message(phone_number, vcode)
-        cache.set("smg_{}".format(phone_number), vcode, timeout=5*60)  # 5分钟的失效
+        cache.set("smg_{}".format(phone_number), vcode, timeout=5 * 60)  # 5分钟的失效
         return Response(status=http.HTTPStatus.OK, data={"code": 0, "message": "OK", "data": {}})

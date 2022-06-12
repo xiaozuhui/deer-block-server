@@ -23,7 +23,7 @@ services:
     image: quay.io/minio/minio:RELEASE.2022-05-08T23-50-31Z
     command: server --address ":9000" --console-address ":9001" /data
     container_name: db_minio_server
-    expose:
+    ports:
       - "19090:9000"
       - "19091:9001"
     environment:
@@ -71,8 +71,6 @@ services:
       - MINIO_SET_PORT=9000
       - MINIO_STORAGE_ACCESS_KEY=root
       - MINIO_STORAGE_SECRET_KEY=1qazXDR%?
-      - MINIO_STORAGE_USE_HTTPS=False
-      - MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET=True
     container_name: deer_block_server
     command: /bin/bash -c "python3 /opt/deer_block/manage.py makemigrations && python3 /opt/deer_block/manage.py migrate && gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application"
     links:
