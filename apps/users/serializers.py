@@ -22,6 +22,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             "ip": {"required": False, "allow_null": True},
+            "user": {"required": False, "allow_null": True},
         }
 
 

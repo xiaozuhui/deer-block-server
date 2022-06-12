@@ -16,6 +16,9 @@ from exceptions.custom_excptions.issues_error import IssuesError
 
 class SquareBaseViewSet(CustomViewBase):
     def create(self, request, *args, **kwargs):
+        """
+        创建草稿，并不会发布
+        """
         data_ = request.data.copy()
         data_["publisher"] = request.user.id
         if request.META.get('HTTP_X_FORWARDED_FOR'):
@@ -123,24 +126,26 @@ class IssuesViewSet(SquareBaseViewSet):
             raise IssuesError.ErrAbandonInstance
         if instance.status == PublishStatus.PUBLISHED:
             raise IssuesError.ErrHasPublished
-        # 首先需要将原本的issues变为废弃状态，然后再创建新的副本
-        instance.status = PublishStatus.ABANDONED
-        instance.save()  # 推荐使用save，这样可以记录保存时间
-        data_ = request.data.copy()
-        data_["publisher"] = request.user.id
-        if request.META.get('HTTP_X_FORWARDED_FOR'):
-            ip = request.META.get("HTTP_X_FORWARDED_FOR")
-        else:
-            ip = request.data.get('ip', "")
-        if ip:
-            data_["ip"] = ip
-        # 如果原本的数据有origin，则使用origin，否则就使用issues的id
-        data_["origin"] = instance.origin.id if instance.origin else instance.id
-        data_["version"] = instance.version + 1
-        serializer = self.get_serializer(data=data_)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return JsonResponse(data=serializer.data, msg="OK", code=0, status=http.HTTPStatus.OK)
+        # # 首先需要将原本的issues变为废弃状态，然后再创建新的副本
+        # instance.status = PublishStatus.ABANDONED
+        # instance.save()  # 推荐使用save，这样可以记录保存时间
+        # data_ = request.data.copy()
+        # data_["publisher"] = request.user.id
+        # if request.META.get('HTTP_X_FORWARDED_FOR'):
+        #     ip = request.META.get("HTTP_X_FORWARDED_FOR")
+        # else:
+        #     ip = request.data.get('ip', "")
+        # if ip:
+        #     data_["ip"] = ip
+        # data_["title"] = request.data.get('title', instance.title)
+        # # 如果原本的数据有origin，则使用origin，否则就使用issues的id
+        # data_["origin"] = instance.origin.id if instance.origin else instance.id
+        # data_["version"] = instance.version + 1
+        # serializer = self.get_serializer(data=data_)
+        # serializer.is_valid(raise_exception=True)
+        # self.perform_update(serializer)
+        resp = super(IssuesViewSet, self).update(request, *args, **kwargs)
+        return resp
 
     @action(methods=['post', 'get', 'delete'], detail=True)
     def thumbs_up(self, request, *args, **kwargs):

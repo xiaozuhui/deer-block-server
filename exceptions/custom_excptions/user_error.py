@@ -10,3 +10,10 @@ class UserError(CustomErrorEnum, APIException):
         ErrorType.USER,
         level=Level.ERROR,
     )
+
+    ErrProfileHasExist = CustomError(
+        "Profile数据已经存在",
+        "UF002",
+        ErrorType.USER,
+        level=Level.WARN,
+    )
