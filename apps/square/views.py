@@ -6,15 +6,26 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
-from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer
+from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer, CommentSerializer
 from apps.consts import PublishStatus
-from apps.square.models import Issues, Reply
-from apps.square.serializers import IssuesSerializer, ReplySerializer
+from apps.square.models import Issues
+from apps.square.serializers import IssuesSerializer
 from exceptions.custom_excptions.business_error import BusinessError
 from exceptions.custom_excptions.issues_error import IssuesError
 
 
-class SquareBaseViewSet(CustomViewBase):
+class IssuesViewSet(CustomViewBase):
+    queryset = Issues.logic_objects.all().order_by('-created_at')
+    serializer_class = IssuesSerializer
+    filter_fields = ('id', 'title', 'status', 'publisher')
+    permission_classes = [IsAuthenticated]
+    permission_classes_by_action = {
+        'list': [AllowAny],
+        'retrieve': [AllowAny],
+        'default': [IsAuthenticated],
+        "video_list": [AllowAny],
+    }
+
     def create(self, request, *args, **kwargs):
         """
         创建草稿，并不会发布
@@ -32,19 +43,6 @@ class SquareBaseViewSet(CustomViewBase):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return JsonResponse(data=serializer.data, msg="OK", code=0, status=status.HTTP_201_CREATED, headers=headers)
-
-
-class IssuesViewSet(SquareBaseViewSet):
-    queryset = Issues.logic_objects.all().order_by('-created_at')
-    serializer_class = IssuesSerializer
-    filter_fields = ('id', 'title', 'status', 'publisher')
-    permission_classes = [IsAuthenticated]
-    permission_classes_by_action = {
-        'list': [AllowAny],
-        'retrieve': [AllowAny],
-        'default': [IsAuthenticated],
-        "video_list": [AllowAny],
-    }
 
     @action(methods=['get'], detail=False)
     def user_list(self, request, *args, **kwargs):
@@ -126,24 +124,6 @@ class IssuesViewSet(SquareBaseViewSet):
             raise IssuesError.ErrAbandonInstance
         if instance.status == PublishStatus.PUBLISHED:
             raise IssuesError.ErrHasPublished
-        # # 首先需要将原本的issues变为废弃状态，然后再创建新的副本
-        # instance.status = PublishStatus.ABANDONED
-        # instance.save()  # 推荐使用save，这样可以记录保存时间
-        # data_ = request.data.copy()
-        # data_["publisher"] = request.user.id
-        # if request.META.get('HTTP_X_FORWARDED_FOR'):
-        #     ip = request.META.get("HTTP_X_FORWARDED_FOR")
-        # else:
-        #     ip = request.data.get('ip', "")
-        # if ip:
-        #     data_["ip"] = ip
-        # data_["title"] = request.data.get('title', instance.title)
-        # # 如果原本的数据有origin，则使用origin，否则就使用issues的id
-        # data_["origin"] = instance.origin.id if instance.origin else instance.id
-        # data_["version"] = instance.version + 1
-        # serializer = self.get_serializer(data=data_)
-        # serializer.is_valid(raise_exception=True)
-        # self.perform_update(serializer)
         resp = super(IssuesViewSet, self).update(request, *args, **kwargs)
         return resp
 
@@ -159,16 +139,16 @@ class IssuesViewSet(SquareBaseViewSet):
         # 3、如果不存在点赞，则不能删除
         issues = self.get_object()  # 获取到对应的issues
         user = request.user  # 获取登录的用户
-        tp = issues.get_thumbup(user)  # 如果不存在，则为[]
+        tp = issues.get_thumb_up(user)  # 如果不存在，则为[]
         data = []
         if request.method == 'POST':
             if not tp:
-                tp = issues.create_thumbsup(user)
+                tp = issues.create_thumbs_up(user)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
             if not tp:
                 raise BusinessError.ErrNoThumbUp
-            issues.delete_thumbsup(user)
+            issues.delete_thumbs_up(user)
         elif request.method == 'GET':
             data = ThumbUpSerializer(tp).data
         return JsonResponse(data=data, msg="OK", code=0, status=200)
@@ -217,6 +197,31 @@ class IssuesViewSet(SquareBaseViewSet):
             data = ShareSerializer(shares, many=True).data
         return JsonResponse(data=data, msg="OK", code=0, status=200)
 
+    @action(methods=['post', 'delete'], detail=True)
+    def comment(self, request, *args, **kwargs):
+        """
+        写评论或是删除评论
+        删除评论需要评论的id
+        """
+        issues = self.get_object()  # 获取到对应的issues
+        user = request.user  # 获取登录的用户
+        content = request.data.get("content", "")
+        medias = request.data.get("medias", None)
+        if request.META.get('HTTP_X_FORWARDED_FOR'):
+            ip = request.META.get("HTTP_X_FORWARDED_FOR")
+        else:
+            ip = request.data.get('ip', None)
+        data = []
+        if request.method == 'POST':
+            comment = issues.create_comment(user, content=content, medias=medias, ip=ip)
+            data = CommentSerializer(comment).data
+        elif request.method == 'DELETE':
+            comment_id = request.data.get("comment_id", None)
+            if not comment_id:
+                raise BusinessError.ErrNoCommentId
+            issues.delete_comment(comment_id, user)
+        return JsonResponse(data=data, msg="OK", code=0, status=200)
+
     @action(methods=['get'], detail=False)
     def video_list(self, request, *args, **kwargs):
         """获取视频动态
@@ -228,8 +233,3 @@ class IssuesViewSet(SquareBaseViewSet):
             request (_type_): _description_
         """
         pass
-
-
-class ReplyViewSet(SquareBaseViewSet):
-    queryset = Reply.logic_objects.all().order_by('-updated_at')
-    serializer_class = ReplySerializer

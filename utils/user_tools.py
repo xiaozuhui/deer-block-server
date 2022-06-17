@@ -1,12 +1,8 @@
-import string
-import time
 import random
-
+import string
 
 from apps.users.models import User
 from utils import consts
-from utils.base_tools import random_str_choice
-from django.core.cache import cache
 
 
 def get_user_name(phone_number: str = "") -> str:
@@ -19,25 +15,25 @@ def get_user_name(phone_number: str = "") -> str:
         str: 用户K00013487YD
     """
     first = "".join(random.choices(consts.CHR, k=1)).upper()
-    no = User.logic_objects.count()+1
-    mid_no = phone_number[-4:] if phone_number else str(random.random()*1000)[:4]
+    no = User.logic_objects.count() + 1
+    mid_no = phone_number[-4:] if phone_number else str(random.random() * 1000)[:4]
     last = "".join(random.choices(consts.CHR, k=2)).upper()
-    return "用户 {}".format(first+str(no).rjust(4, '0')+mid_no+last)
+    return "用户 {}".format(first + str(no).rjust(4, '0') + mid_no + last)
 
 
 def get_user_password(length=12):
     # 随机生成字母和数字的位数
-    numcount = random.randint(1, length-1)
-    lettercount = length - numcount
+    num_count = random.randint(1, length - 1)
+    letter_count = length - num_count
     # 随机抽样生成数字序列
-    numlist = [random.choice(string.digits) for _ in range(numcount)]
+    num_list = [random.choice(string.digits) for _ in range(num_count)]
     # 随机抽样生成字母序列
-    letterlist = [random.choice(string.ascii_letters)
-                  for _ in range(lettercount)]
+    letter_list = [random.choice(string.ascii_letters)
+                   for _ in range(letter_count)]
     # 合并字母数字序列
-    alllist = numlist + letterlist
+    all_list = num_list + letter_list
     # 乱序
-    result = random.shuffle(alllist)
+    random.shuffle(all_list)
     # 生成目标结果字符串
-    result = "".join([i for i in alllist])
+    result = "".join([i for i in all_list])
     return result
