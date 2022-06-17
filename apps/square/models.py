@@ -1,43 +1,33 @@
 from django.db import models
 
 from apps.base_model import BaseModel
-from apps.bussiness.models import Category, Tag
+from apps.bussiness.models import Category, Tag, Comment, ThumbUp
 from apps.consts import PublishStatus
 from apps.custom_models import ImageField
 from apps.interfaces.can_collection import CanCollection
+from apps.interfaces.can_comment import CanComment
 from apps.interfaces.can_share import CanShare
-from apps.interfaces.can_thumbup import CanThumbup
+from apps.interfaces.can_thumbup import CanThumbUp
 from apps.media.models import File
 from apps.users.models import User
+from exceptions.custom_excptions.business_error import BusinessError
 
 
-class Issues(BaseModel, CanShare, CanCollection, CanThumbup):
+class Issues(BaseModel, CanShare, CanCollection, CanThumbUp, CanComment):
     """
     动态
     对于一个动态来说，点赞、收藏、回复
     """
     title = models.CharField(max_length=225, verbose_name="动态标题")
-    publisher = models.ForeignKey(
-        User, verbose_name="发布者", on_delete=models.CASCADE)
-    status = models.CharField(
-        max_length=20, choices=PublishStatus.choices, verbose_name="状态", default=PublishStatus.DRAFT)
+    publisher = models.ForeignKey(User, verbose_name="发布者", on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=PublishStatus.choices, verbose_name="状态",
+                              default=PublishStatus.DRAFT)
     content = models.TextField(verbose_name="动态内容")
-    medias = models.ManyToManyField(
-        File, verbose_name="图片和视频", blank=True)
-    # TODO 暂时不做版本的控制，可能直接用这种方式来控制版本也不是一个好的方法
-    # origin存在的意义是，保留之前的修改，标注上一次的版本是什么
-    # origin = models.ForeignKey(
-    #     'Issues', verbose_name="原动态", related_name="origin_issues",
-    #     blank=True, null=True, on_delete=models.CASCADE)
-    # # version同理
-    # version = models.IntegerField(verbose_name="版本", default=0)
+    medias = models.ManyToManyField(File, verbose_name="图片和视频", blank=True)
     tags = models.ManyToManyField(Tag, verbose_name="标签", blank=True)
-    categories = models.ManyToManyField(
-        Category, verbose_name="分类", blank=True)
+    categories = models.ManyToManyField(Category, verbose_name="分类", blank=True)
     # 发布时的ip地址
-    ip = models.GenericIPAddressField(
-        verbose_name="发布时ip地址", blank=True, null=True)
-
+    ip = models.GenericIPAddressField(verbose_name="发布时ip地址", blank=True, null=True)
     # 标识这个issues是不是纯粹的视频动态
     is_video_issues = models.BooleanField(verbose_name="是否是视频动态", default=False)
     # 视频封面
@@ -51,34 +41,105 @@ class Issues(BaseModel, CanShare, CanCollection, CanThumbup):
         verbose_name_plural = verbose_name
         db_table = "issues"
 
-    def change_status(self, status=None):
-        if status == PublishStatus.DRAFT:
-            self.status = PublishStatus.DRAFT
-        elif status == PublishStatus.PUBLISHED:
-            self.status = PublishStatus.PUBLISHED
-        else:
-            self.status = PublishStatus.ABANDONED
-        self.save()
+    # 实现接口
+    def create_comment(self, user, content, medias=None, ip=None):
+        """
+        创建评论
 
+        content: string 评论内容 不可为空
+        medias: list of File id 保存的文件id
+        parent_comments: 父评论id
+        ip: ip地址
+        """
+        if not user:
+            # 没有对应的用户，就不能创建
+            raise BusinessError.ErrNoUser
+        if not content or not medias:
+            # 如果既没有内容又没有图片，则报错
+            raise BusinessError.ErrContentEmpty
+        comment = Comment.create_instance(self, user=user, content=content, medias=medias, ip=ip)
+        return comment
 
-class Reply(BaseModel, CanThumbup):
-    """
-    动态的回复
-    关于动态的回复，每一次回复，都应该提示该回复的“父回复”的“回复者”，以及回复中被@的用户
-    并且，必然要提示顶层回复者和动态的发布者
-    """
-    issues = models.ForeignKey(
-        Issues, verbose_name="对应动态", on_delete=models.CASCADE)
-    reply = models.ForeignKey('Reply', verbose_name="对应回复", on_delete=models.DO_NOTHING, related_name="re_reply",
-                              null=True, blank=True)
-    publisher = models.ForeignKey(
-        User, verbose_name="回复者", on_delete=models.DO_NOTHING)
-    content = models.TextField(verbose_name="回复内容")
-    medias = models.ManyToManyField(File, verbose_name="图片和视频")
-    ip = models.GenericIPAddressField(
-        verbose_name="评论时ip地址", blank=True, null=True)
+    def delete_comments(self, user):
+        """
+        删除所有该对象下的所有该用户的评论
+        """
+        c = Comment.get_instances(self).filter(user__id=user.id)
+        if not c:
+            raise BusinessError.ErrNoComment
+        c.delete()
 
-    class Meta:
-        verbose_name = "动态回复"
-        verbose_name_plural = verbose_name
-        db_table = "replies"
+    def delete_comment(self, comment_id, user):
+        """
+        删除这个用户的某个精确到id的评论
+        """
+        c = Comment.get_instances(self).filter(id=comment_id).filter(user__id=user.id)
+        if not c:
+            raise BusinessError.ErrNoUserComment
+        c.delete()
+
+    def get_comments(self):
+        """
+        获取某个对象下的comment
+        """
+        c = Comment.get_instances(self)
+        return c
+
+    def get_user_comments(self, user):
+        c = Comment.get_instances(self).filter(user__id=user.id)
+        return c
+
+    def create_thumbs_up(self, user):
+        """点赞，其实就是创建点赞模型的对象
+
+        Args:
+            user (_type_): 用户对象
+
+        Raises:
+            BusinessError.ErrNoUser: _description_
+
+        Returns:
+            ThumbUp: 点赞模型对象
+        """
+        if not user:
+            # 没有对应的用户，就不能创建
+            raise BusinessError.ErrNoUser
+        tp = ThumbUp.create_instance(self, user=user)
+        return tp
+
+    def delete_thumbs_up(self, user):
+        """取消点赞
+
+        Args:
+            user (_type_): _description_
+
+        Raises:
+            BusinessError.ErrNoThumbUp: _description_
+        """
+        tp = ThumbUp.get_instances(self).filter(
+            user__id=user.id).first()  # 如果不存在，则为[]
+        if not tp:
+            raise BusinessError.ErrNoThumbUp
+        tp.delete()
+
+    def get_thumb_up(self, user):
+        """获取该对象下的该用户的点赞
+
+        Args:
+            user (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        tp = ThumbUp.get_instances(self).filter(
+            user__id=user.id).first()
+        return tp
+
+    def get_thumb_ups(self):
+        """获取该对象下的所有点赞
+
+        Returns:
+            _type_: _description_
+        """
+        tps = ThumbUp.get_instances(self)
+        return tps

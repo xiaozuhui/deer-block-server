@@ -30,9 +30,9 @@ class GenericModel(BaseModel):
     @classmethod
     def get_instances(cls, obj):
         obj_model_ct = ContentType.objects.get_for_model(obj)
-        inses = cls.logic_objects.filter(
+        ins = cls.logic_objects.filter(
             content_type=obj_model_ct, object_id=obj.id)
-        return inses
+        return ins
 
     @classmethod
     def get_count(cls, obj):

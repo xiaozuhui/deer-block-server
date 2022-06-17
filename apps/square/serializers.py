@@ -1,20 +1,19 @@
 from rest_framework import serializers
-from apps.bussiness.models import Collection, Share, ThumbUp
-from apps.bussiness.serializers import CollectionSerializer, ShareSerializer, ThumbUpSerializer
 
+from apps.bussiness.models import Collection, Share, ThumbUp, Comment
 from apps.media.serializers import FileSerializer
-from .models import Issues, Reply
+from .models import Issues
 
 
 class IssuesSerializer(serializers.ModelSerializer):
     collections = serializers.SerializerMethodField()
     collection_count = serializers.SerializerMethodField()
-    thumbs_up = serializers.SerializerMethodField()
     thumbs_up_count = serializers.SerializerMethodField()
-    replies = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
-    shares = serializers.SerializerMethodField()
     share_count = serializers.SerializerMethodField()
+    # 当前账号是否点赞、收藏？
+    is_thumbs_up = serializers.SerializerMethodField()
+    is_collected = serializers.SerializerMethodField()
 
     # 发布者
     publisher_id = serializers.CharField(
@@ -40,18 +39,6 @@ class IssuesSerializer(serializers.ModelSerializer):
             "is_video_issues": {"required": False, "allow_null": True},
         }
 
-    def get_collections(self, issues):
-        collections = Collection.get_instances(issues)
-        return CollectionSerializer(collections, many=True).data
-
-    def get_thumbs_up(self, issues):
-        thumbs_ups = ThumbUp.get_instances(issues)
-        return ThumbUpSerializer(thumbs_ups, many=True).data
-
-    def get_replies(self, issues):
-        replies = Reply.logic_objects.filter(issues__id=issues.id)
-        return ReplySerializer(replies, many=True).data
-
     def get_media_detail(self, issues):
         fs = issues.medias
         return FileSerializer(fs, many=True).data
@@ -65,51 +52,28 @@ class IssuesSerializer(serializers.ModelSerializer):
         return count
 
     def get_reply_count(self, issues):
-        count = Reply.logic_objects.filter(issues__id=issues.id).count()
+        count = Comment.get_count(issues)
         return count
-
-    def get_shares(self, issues):
-        sahres = Share.get_instances(issues)
-        return ShareSerializer(sahres, many=True).data
 
     def get_share_count(self, issues):
         count = Share.get_count(issues)
         return count
 
+    def get_is_thumbs_up(self, issues):
+        """
+        当前用户对于这个issues对象是否点赞
+        """
+        if not self.request.user:
+            return False
+        tps = issues.get_thumbup(self.request.user)
+        if tps and len(tps) == 1:
+            return True
+        return False
 
-class ReplySerializer(serializers.ModelSerializer):
-    thumbs_up = serializers.SerializerMethodField()
-    thumbs_up_count = serializers.SerializerMethodField()
-    replies = serializers.SerializerMethodField()
-    media_detail = serializers.SerializerMethodField()
-
-    publisher_id = serializers.CharField(
-        read_only=True, source="publisher.id")
-    publisher_name = serializers.CharField(
-        read_only=True, source="publisher.username")
-
-    class Meta:
-        model = Reply
-        fields = "__all__"
-        extra_kwargs = {
-            "id": {"required": False, "allow_null": True},
-            "medias": {"required": False, "allow_null": True},
-            "publisher": {"required": False, "allow_null": True},
-            "ip": {"required": False, "allow_null": True},
-        }
-
-    def get_thumbs_up(self, reply):
-        thumbs_ups = ThumbUp.get_instances(reply)
-        return ThumbUpSerializer(thumbs_ups, many=True).data
-
-    def get_thumbs_up_count(self, reply):
-        count = ThumbUp.get_count(reply)
-        return count
-
-    def get_replies(self, reply):
-        replies = Reply.logic_objects.filter(reply__id=reply.id)
-        return ReplySerializer(replies, many=True).data
-
-    def get_media_detall(self, reply):
-        fs = reply.medias
-        return FileSerializer(fs, many=True).data
+    def get_is_collected(self, issues):
+        if not self.request.user:
+            return False
+        colls = issues.get_collect(self.request.user)
+        if colls and len(colls) == 1:
+            return True
+        return False

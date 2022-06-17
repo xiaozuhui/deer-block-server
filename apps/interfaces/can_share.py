@@ -1,14 +1,10 @@
-from django.db import models
-
 from apps.bussiness.models import Share
 from exceptions.custom_excptions.business_error import BusinessError
 
 
-class CanShare(models.Model):
+class CanShare:
     """能够被分享的模型interface
     """
-    class Meta:
-        abstract = True
 
     def create_share(self, user, share_url="", share_type=""):
         """创建一条分享链接
@@ -27,7 +23,7 @@ class CanShare(models.Model):
         if not user:
             raise BusinessError.ErrNoUser
         share = Share.create_instance(
-            self, sharer=user, share_url=share_url, share_type=share_type)
+            self, user=user, share_url=share_url, share_type=share_type)
         return share
 
     def get_all_share(self):
@@ -48,5 +44,5 @@ class CanShare(models.Model):
         Returns:
             _type_: _description_
         """
-        shares = Share.get_instances(self).filter(sharer__id=user.id)
+        shares = Share.get_instances(self).filter(user__id=user.id)
         return shares
