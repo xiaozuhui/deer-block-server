@@ -1,11 +1,11 @@
-from exceptions.custom_excptions.code_error import CodeError
+from django.test import TestCase
 
-if __name__ == "__main__":
-    err = CodeError('ErrCodeType')
-    print(err)
-    # err = CodeError("ErrCodeType")
-    # print(err)
-    # print(CodeError("ErrCodeType").to_serializer())
-    ser = CodeError.ErrCodeType.to_serializer()
-    print(ser)
-    # raise err
+from exceptions.custom_excptions.business_error import BusinessError
+
+
+class CustomErrorTest(TestCase):
+    def test_business_error(self):
+        # 检查两种不同的形式是否一致
+        err1 = BusinessError('ErrNoThumbUp')
+        err2 = BusinessError.ErrNoThumbUp
+        self.assertEqual(err1, err2)
