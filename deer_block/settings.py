@@ -290,6 +290,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False  # 是否向上一级logger实例传递日志信息
         },
+        'django.test': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False
+        },
     },
 }
 
