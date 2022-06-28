@@ -17,3 +17,17 @@ class UserError(CustomErrorEnum, APIException):
         ErrorType.USER,
         level=Level.WARN,
     )
+
+    ErrHasFollow = CustomError(
+        "您已经关注该用户",
+        "UF003",
+        ErrorType.USER,
+        level=Level.WARN,
+    )
+
+    ErrNotFollow = CustomError(
+        "您并未关注该用户",
+        "UF004",
+        ErrorType.USER,
+        level=Level.ERROR,
+    )

@@ -36,12 +36,10 @@ class UserProfile(BaseModel):
     signature = models.CharField(
         max_length=215, verbose_name="签名", blank=True, null=True)
 
-    # 关注与被关注
+    # 关注
     follow = models.ManyToManyField(
         User, related_name="user_follow", verbose_name='关注', blank=True)
-    followed = models.ManyToManyField(
-        User, related_name="user_followed", verbose_name='被关注', blank=True)
-    
+
     ip = models.GenericIPAddressField(
         verbose_name="注册时ip地址", blank=True, null=True)
 
