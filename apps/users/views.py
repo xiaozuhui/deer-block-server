@@ -27,11 +27,66 @@ logger = logging.getLogger('django')
 
 
 class UserViewSet(CustomViewBase):
-    """
-    User TODO 需要对每个操作都进行验权
-    """
     queryset = User.logic_objects.all()
     serializer_class = UserSerializer
+
+    @action(methods=['post', 'delete'], detail=True)
+    def follow(self, request, *args, **kwargs):
+        """
+        关注功能
+
+        post 当前用户关注对应的用户，需要被关注用户的id
+        delete 取消关注
+        """
+        current_user = request.user  # 当前登录用户
+        current_profile = UserProfile.logic_objects.filter(user__id=current_user.id).first()
+        target_user = self.get_object()  # 目标用户
+        current_follows = current_profile.follow.all()  # 当前登录用户的关注列表
+        if request.method == "POST":
+            if target_user in current_follows:
+                # 已经关注
+                raise UserError.ErrHasFollow
+            current_profile.follow.add(target_user)
+            current_profile.save()
+        elif request.method == "DELETE":
+            if target_user not in current_follows:
+                # 没有关注
+                raise UserError.ErrNotFollow
+            current_profile.follow.remove(target_user)
+        return JsonResponse(data=[], msg="OK", code=0, status=200)
+
+    @action(methods=['get'], detail=False)
+    def follows(self, request, *args, **kwargs):
+        """
+        获取当前用户的所有关注的用户
+        """
+        user = request.user
+        profile = UserProfile.logic_objects.filter(user__id=user.id).first()
+        follows = profile.follow.all()
+        page = self.paginate_queryset(follows)
+        if page:
+            ser = self.get_serializer(page, many=True)
+            return self.get_paginated_response(ser.data)
+        ser = self.get_serializer(follows, many=True)
+        headers = self.get_success_headers(ser.data)
+        return JsonResponse(status=http.HTTPStatus.OK,
+                            data=ser.data, headers=headers, msg="OK", code=0)
+
+    @action(methods=['get'], detail=False)
+    def followed(self, request, *args, **kwargs):
+        """
+        获取关注当前用户的所有用户
+        """
+        user = request.user
+        users = User.logic_objects.filter(profile_user__follow__id__contains=user.id)
+        page = self.paginate_queryset(users)
+        if page:
+            ser = self.get_serializer(page, many=True)
+            return self.get_paginated_response(ser.data)
+        ser = self.get_serializer(users, many=True)
+        headers = self.get_success_headers(ser.data)
+        return JsonResponse(status=http.HTTPStatus.OK,
+                            data=ser.data, headers=headers, msg="OK", code=0)
 
 
 class ProfileViewSet(CustomViewBase):
