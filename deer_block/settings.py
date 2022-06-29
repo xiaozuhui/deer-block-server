@@ -312,3 +312,21 @@ ALI_SEND_CONFIG = {
         "template_code": os.environ.get("TEMPLATE_CODE"),
     },
 }
+
+# celery 配置
+# Broker配置，使用Redis作为消息中间件
+BROKER_URL = "redis://{}:{}/1".format(os.environ.get("CACHE_LOCATION_IP", '127.0.0.1'),
+                                      os.environ.get("CACHE_LOCATION_PORT", '16379'))
+# BACKEND配置，这里使用redis
+CELERY_RESULT_BACKEND = "redis://{}:{}/1".format(os.environ.get("CACHE_LOCATION_IP", '127.0.0.1'),
+                                                 os.environ.get("CACHE_LOCATION_PORT", '16379'))
+# 结果序列化方案
+CELERY_RESULT_SERIALIZER = 'json'
+# 任务结果过期时间，秒
+CELERY_TASK_RESULT_EXPIRES = 60 * 60 * 24
+# 时区配置
+CELERY_TIMEZONE = TIME_ZONE
+
+# websocket
+WS_URL = "ws://{}:{}/".format(os.environ.get("WS_IP", 'localhost'),
+                              os.environ.get("WS_PORT", '18000'))
