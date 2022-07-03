@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3'
 
 services:
   db:
@@ -6,7 +6,7 @@ services:
     ports:
       - "15432:5432"
     volumes:
-      - /var/data/db:/var/lib/postgresql/data
+      - $HOME/data/db:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=123456
       - POSTGRES_USER=postgres
@@ -31,15 +31,14 @@ services:
       MINIO_ROOT_PASSWORD: 1qazXDR%?
       MINIO_PROMETHEUS_AUTH_TYPE: public
     volumes:
-      - /docker/minio/data:/data               #映射当前目录下的data目录至容器内/data目录
-      - /docker/minio/config:/root/.minio/     #映射配置目录
+      - $HOME/data/minio/data:/data #映射当前目录下的data目录至容器内/data目录
+      - $HOME/data/minio/config:/root/.minio/ #映射配置目录
     privileged: true
     restart: always
   deerblock:
-    image: 101.35.246.34/deer_block/deer-block-server:latest
+    image: deer-block-server:v1
     ports:
       - "18080:8088"
-    # 替换成线上生产
     volumes:
       - /var/log/deer_block_server:/opt/deer_block/logs/
     environment:
@@ -52,20 +51,15 @@ services:
       # 缓存配置-默认redis
       - CACHE_LOCATION_IP=redis
       - CACHE_LOCATION_PORT=6379
-      # OSS 阿里云
-      #      - OSS_ACCESS_KEY_ID=LTAI5tEqusWURSPxDZAWnhNZ
-      #      - OSS_ACCESS_KEY_SECRET=HRxY0tiNUCuQ553ku6Mxsma2ncdafn
-      #      - OSS_ENDPOINT=oss-cn-shanghai.aliyuncs.com
-      #      - OSS_BUCKET_NAME=papaw
       # 短信发送
       - SEND_MESSAGE_ACCESS_KEY=LTAI5tKqWQhoEfRhyJKc15yW
       - SEND_MESSAGE_ACCESS_SECRET=FGhlSPqkSE7qmZksPUYya762j2AdaR
       - SEND_MSG_MODE=aliyun
       - SIGN_NAME=阿里云短信测试
       - TEMPLATE_CODE=SMS_154950909
-      # minio 
+      # minio
       # TODO 上线的时候需要修改
-      - MINIO_IP=101.35.246.34
+      - MINIO_IP=localhost
       - MINIO_PORT=19090
       - MINIO_SET_IP=minio
       - MINIO_SET_PORT=9000
@@ -77,7 +71,7 @@ services:
       - -c
       - |
         supervisord -c /opt/deer_block/supervisord.conf
-        gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application"
+        gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application
     links:
       - db
       - redis

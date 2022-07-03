@@ -3,10 +3,10 @@ from rest_framework import serializers
 from apps.bussiness.models import Collection, Share, ThumbUp, Comment
 from apps.media.serializers import FileSerializer
 from .models import Issues
+from ..users.models import User
 
 
 class IssuesSerializer(serializers.ModelSerializer):
-    collections = serializers.SerializerMethodField()
     collection_count = serializers.SerializerMethodField()
     thumbs_up_count = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
@@ -63,17 +63,25 @@ class IssuesSerializer(serializers.ModelSerializer):
         """
         当前用户对于这个issues对象是否点赞
         """
-        if not self.request.user:
+        user_id = self.context.get('user_id', None)
+        if not user_id:
             return False
-        tps = issues.get_thumbup(self.request.user)
+        user = User.logic_objects.filter(id=user_id).first()
+        if not user:
+            return False
+        tps = issues.get_thumb_up(user)
         if tps and len(tps) == 1:
             return True
         return False
 
     def get_is_collected(self, issues):
-        if not self.request.user:
+        user_id = self.context.get('user_id', None)
+        if not user_id:
             return False
-        colls = issues.get_collect(self.request.user)
+        user = User.logic_objects.filter(id=user_id).first()
+        if not user:
+            return False
+        colls = issues.get_collect(user)
         if colls and len(colls) == 1:
             return True
         return False
