@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from apps.base_view import CustomViewBase, JsonResponse
 from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer, CommentSerializer
 from apps.consts import PublishStatus
+from apps.square import tasks
 from apps.square.models import Issues
 from apps.square.serializers import IssuesSerializer
 from exceptions.custom_excptions.business_error import BusinessError
@@ -38,7 +39,7 @@ class IssuesViewSet(CustomViewBase):
             ip = request.data.get('ip', None)
         if ip:
             data_["ip"] = ip
-        serializer = self.get_serializer(data=data_)
+        serializer = self.get_serializer(data=data_, context={'user': request.user})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -54,10 +55,10 @@ class IssuesViewSet(CustomViewBase):
             publisher__id=user.id, status=PublishStatus.PUBLISHED).order_by('-updated_at')
         page = self.paginate_queryset(issues)
         if page:
-            ser = self.get_serializer(page, many=True)
+            ser = self.get_serializer(page, many=True, context={'user_id': request.user.id})
             return self.get_paginated_response(ser.data)
 
-        ser = self.get_serializer(issues, many=True)
+        ser = self.get_serializer(issues, many=True, context={'user_id': request.user.id})
         headers = self.get_success_headers(ser.data)
         return JsonResponse(status=http.HTTPStatus.OK,
                             data=ser.data, headers=headers, msg="OK", code=0)
@@ -85,9 +86,12 @@ class IssuesViewSet(CustomViewBase):
                 if ip:
                     data_["ip"] = ip
                 serializer = self.get_serializer(
-                    issues, data=data_, partial=partial)
+                    issues, data=data_, partial=partial, context={'user_id': request.user.id})
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
+
+                tasks.send_issues_message_2_websocket.delay(user_id=user.id, issues_id=issues.id)
+
                 return JsonResponse(data=serializer.data, msg="OK", code=0, status=http.HTTPStatus.OK)
             else:
                 # 没有动态数据
@@ -108,9 +112,13 @@ class IssuesViewSet(CustomViewBase):
         if ip:
             data_["ip"] = ip
         data_["status"] = PublishStatus.PUBLISHED
-        serializer = self.get_serializer(data=data_)
+        serializer = self.get_serializer(data=data_, context={'user_id': request.user.id})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+
+        issues_id = serializer.data.get("id")
+        tasks.send_issues_message_2_websocket.delay(user_id=request.user.id, issues_id=issues_id)
+
         headers = self.get_success_headers(serializer.data)
         return JsonResponse(data=serializer.data, msg="OK", code=0, status=status.HTTP_201_CREATED, headers=headers)
 
