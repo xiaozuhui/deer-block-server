@@ -35,6 +35,31 @@ services:
       - $HOME/data/minio/config:/root/.minio/ #映射配置目录
     privileged: true
     restart: always
+  message:
+    image: deer_block_message:v1
+    container_name: deer_block_message
+    ports:
+      - "18000:8000"
+    volumes:
+      - /var/log/deer_block_message:/opt/deer_block_message/logs/
+    environment:
+      # 数据库链接信息
+      - POSTGRES_NAME=deer_block
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      # 缓存配置-默认redis
+      - CACHE_LOCATION_IP=redis
+      - CACHE_LOCATION_PORT=6379
+    command: /bin/bash -c "daphne -b 0.0.0.0 -p 8000 deer_block_message.asgi:application"
+    links:
+      - db
+      - redis
+    depends_on:
+      - db
+      - redis
+    restart: always
   deerblock:
     image: deer-block-server:v1
     ports:
@@ -65,6 +90,9 @@ services:
       - MINIO_SET_PORT=9000
       - MINIO_STORAGE_ACCESS_KEY=root
       - MINIO_STORAGE_SECRET_KEY=1qazXDR%?
+      # websocket
+      - WS_IP=message
+      - WS_PORT=8000
     container_name: deer_block_server
     command:
       - /bin/bash
@@ -76,8 +104,9 @@ services:
       - db
       - redis
       - minio
+      - message
     depends_on:
       - db
       - redis
       - minio
-    restart: always
+      - message
