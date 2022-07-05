@@ -51,7 +51,6 @@ steps:
         - echo ====开始部署=======
         - docker pull 101.35.246.34/deer_block/deer-block-server:latest
         - docker-compose -f /etc/docker-compose/deer_block_server/docker-compose.yml up -d
-        - docker rmi $(docker images | grep deer_block_server | grep none | awk  '{print $3}')
         - echo ====部署成功=======
 
 trigger:
