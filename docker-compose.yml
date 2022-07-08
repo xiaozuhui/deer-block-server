@@ -105,7 +105,7 @@ services:
       - -c
       - |
         supervisord -c /opt/deer_block/supervisord.conf
-        gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application"
+        gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application
     links:
       - db
       - redis
