@@ -56,3 +56,10 @@ class BusinessError(CustomErrorEnum, APIException):
         ErrorType.BUSINESS,
         level=Level.WARN
     )
+
+    ErrErrorMethod = CustomError(
+        "错误的请求",
+        "EI009",
+        ErrorType.BUSINESS,
+        level=Level.ERROR
+    )

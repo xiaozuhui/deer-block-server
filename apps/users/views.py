@@ -2,31 +2,30 @@ import http
 import logging
 import random
 
-from rest_framework.decorators import action
 from django.core.cache import cache
-from rest_framework import status
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from apps.base_view import CustomViewBase, JsonResponse
 from exceptions.custom_excptions.cache_err import CacheRequestError as crerr
 from exceptions.custom_excptions.send_message import SendMessageError as smerr
 from exceptions.custom_excptions.user_error import UserError
 from utils import consts
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
 from utils.send_message import dispatch
-
 from utils.user_tools import get_user_name, get_user_password
-
-from .models import User
 from .model2 import UserProfile
+from .models import User
 from .serializers import MobileSendMessageSerializer, RegisterSerializer, UserSerializer, ProfileSerializer, \
     BlackTokenSerializer
 
 logger = logging.getLogger('django')
 
 
-class UserViewSet(CustomViewBase):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.logic_objects.all()
     serializer_class = UserSerializer
 
@@ -89,7 +88,7 @@ class UserViewSet(CustomViewBase):
                             data=ser.data, headers=headers, msg="OK", code=0)
 
 
-class ProfileViewSet(CustomViewBase):
+class ProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.logic_objects.all()
     serializer_class = ProfileSerializer
 

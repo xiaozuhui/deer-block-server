@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.bussiness.models import Category, Collection, Share, Tag, ThumbUp, Comment
+from apps.bussiness.models import Category, Collection, Share, Tag, ThumbUp, Comment, Message
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -83,3 +83,9 @@ class CommentSerializer(GenericSerializer):
         if tps and len(tps) == 1:
             return True
         return False
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = "__all__"

@@ -1,14 +1,14 @@
 import http
 
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
 from apps.bussiness.filter import TagFilter
-from apps.bussiness.models import Tag, Comment
-from apps.bussiness.serializers import TagSerializer, CommentSerializer, ThumbUpSerializer
+from apps.bussiness.models import Tag, Comment, Message
+from apps.bussiness.serializers import TagSerializer, CommentSerializer, ThumbUpSerializer, MessageSerializer
 from apps.custom_permission import NoPermission
 from exceptions.custom_excptions.business_error import BusinessError
 from exceptions.custom_excptions.params_error import ParamsError
@@ -132,3 +132,29 @@ class CommentViewSet(CustomViewBase):
                 raise BusinessError.ErrNoThumbUp
             comment.delete_thumbs_up(user)
         return JsonResponse(data=data, msg="OK", code=0, status=200)
+
+
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.logic_objects.all()
+    serializer_class = MessageSerializer
+
+    @action(methods=['get'], detail=False)
+    def get_user_messages(self, request, *args, **kwargs):
+        """
+        获取用户的所有消息
+
+        需要分组排序
+        1、按照已读未读分组，未读在前
+        2、按照接收发送时间排序，新的在前
+        """
+        if not request.method == 'GET':
+            raise BusinessError.ErrErrorMethod
+        user_id = request.query_params['user_id']
+        msgs = Message.logic_objects.filter(to_user_id=user_id).order_by('has_consumed', '-created_at', )
+        page = self.paginate_queryset(msgs)
+        if page:
+            ser = self.get_serializer(page, many=True)
+            return self.get_paginated_response(ser.data)
+        ser = self.get_serializer(msgs, many=True)
+        data = ser.data
+        return JsonResponse(status=http.HTTPStatus.OK, data=data, msg="OK", code=0)
