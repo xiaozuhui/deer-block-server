@@ -255,8 +255,8 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
-            # 'filters': ['require_debug_true'],  # 只有在Django debug为True时才在屏幕打印日志
+            'level': 'INFO',
+            'filters': ['require_debug_true'],  # 只有在Django debug为True时才在屏幕打印日志
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
@@ -281,7 +281,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {  # 默认的logger应用如下配置
-            'handlers': ['info', 'console', 'error'],  # 上线之后可以把'console'移除
+            'handlers': ['info', 'console', 'error'],
             'level': 'INFO',
             'propagate': True,
         },

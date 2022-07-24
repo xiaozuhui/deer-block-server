@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
+from apps.bussiness import tasks
 from apps.bussiness.filter import TagFilter
 from apps.bussiness.models import Tag, Comment, Message
 from apps.bussiness.serializers import TagSerializer, CommentSerializer, ThumbUpSerializer, MessageSerializer
@@ -41,6 +42,7 @@ class CommentViewSet(CustomViewBase):
     permission_classes_by_action = {
         'list': [AllowAny],
         'retrieve': [AllowAny],
+        'destroy': [IsAuthenticated],
         'default': [NoPermission],
         'by_content_type': [AllowAny],
         'comment': [IsAuthenticated],
@@ -90,6 +92,9 @@ class CommentViewSet(CustomViewBase):
         """
         comment = self.get_object()  # 获取到对应的comment
         user = request.user  # 获取登录的用户
+        issues_id = request.data.get("issues_id")
+        if not issues_id:
+            raise BusinessError.ErrParamsNotIssuesId
         content = request.data.get("content", "")
         medias = request.data.get("medias", None)
         if request.META.get('HTTP_X_FORWARDED_FOR'):
@@ -98,8 +103,10 @@ class CommentViewSet(CustomViewBase):
             ip = request.data.get('ip', None)
         data = []
         if request.method == 'POST':
-            comment = comment.create_comment(user, content=content, medias=medias, ip=ip)
-            data = CommentSerializer(comment).data
+            comment_ = comment.create_comment(user, content=content, medias=medias, ip=ip, issues_id=issues_id)
+            tasks.send_comment_message_2_websocket.delay(user_id=user.id, issues_id=issues_id, comment_id=comment_.id,
+                                                         target_comment_id=comment.id)
+            data = CommentSerializer(comment_, context={'user_id': request.user.id}).data
         elif request.method == 'DELETE':
             comment_id = request.data.get("comment_id", None)
             if not comment_id:

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.bussiness.models import Category, Collection, Share, Tag, ThumbUp, Comment, Message
+from apps.users.models import User
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -77,9 +78,13 @@ class CommentSerializer(GenericSerializer):
         """
         当前用户对于这个issues对象是否点赞
         """
-        if not self.request.user:
+        user_id = self.context.get('user_id', None)
+        if not user_id:
             return False
-        tps = comment.get_thumb_up(self.request.user)
+        user = User.logic_objects.filter(id=user_id).first()
+        if not user:
+            return False
+        tps = comment.get_thumb_up(user)
         if tps and len(tps) == 1:
             return True
         return False

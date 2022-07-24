@@ -4,13 +4,13 @@ from rest_framework import routers
 
 from apps.bussiness.views import TagViewSet, CommentViewSet, MessageViewSet
 
-app_name = "bussiness"
+app_name = "business"
 
 route_v1 = routers.SimpleRouter()
-route_v1.register(r'buss', TagViewSet)
+route_v1.register(r'tag', TagViewSet)
 route_v1.register(r'comment', CommentViewSet)
 route_v1.register(r'notice', MessageViewSet)
 
 urlpatterns = [
-    url(r'', include((route_v1.urls, "buss"), namespace='bussiness_v1')),
+    url(r'', include((route_v1.urls, "business"), namespace='business_v1')),
 ]

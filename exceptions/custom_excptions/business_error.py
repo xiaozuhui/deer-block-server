@@ -63,3 +63,10 @@ class BusinessError(CustomErrorEnum, APIException):
         ErrorType.BUSINESS,
         level=Level.ERROR
     )
+
+    ErrParamsNotIssuesId = CustomError(
+        "请求中没有对应的issues_id",
+        "EI010",
+        ErrorType.BUSINESS,
+        level=Level.ERROR
+    )

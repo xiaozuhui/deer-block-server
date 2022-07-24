@@ -17,7 +17,7 @@ urlpatterns = [
     path(r'api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     path(r'doc/', include_docs_urls(title="鹿街API文档",
-         description="鹿街后端接口文档", public=False)),
+                                    description="鹿街后端接口文档", public=False)),
     path(r'logout/', LogoutView.as_view(), name='auth_logout'),
     path(r'register/', RegisterView.as_view(), name='auth_register'),
     path(r'msg/phone_valid/', SendMessageView.as_view(),
@@ -26,7 +26,7 @@ urlpatterns = [
     path(r"medias/", include("apps.media.urls")),
     path(r'user/', include('apps.users.urls')),
     path(r'square/', include('apps.square.urls')),
-    path(r'buss/', include('apps.bussiness.urls')),
+    path(r'business/', include('apps.bussiness.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

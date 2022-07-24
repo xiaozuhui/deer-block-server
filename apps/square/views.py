@@ -222,7 +222,8 @@ class IssuesViewSet(CustomViewBase):
         data = []
         if request.method == 'POST':
             comment = issues.create_comment(user, content=content, medias=medias, ip=ip)
-            data = CommentSerializer(comment).data
+            tasks.send_comment_message_2_websocket.delay(user_id=user.id, issues_id=issues.id, comment_id=comment.id)
+            data = CommentSerializer(comment, context={'user_id': request.user.id}).data
         elif request.method == 'DELETE':
             comment_id = request.data.get("comment_id", None)
             if not comment_id:

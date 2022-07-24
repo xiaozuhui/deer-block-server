@@ -42,7 +42,7 @@ class Issues(BaseModel, CanShare, CanCollection, CanThumbUp, CanComment):
         db_table = "issues"
 
     # 实现接口
-    def create_comment(self, user, content, medias=None, ip=None):
+    def create_comment(self, user, content, medias=None, ip=None, *args, **kwargs):
         """
         创建评论
 
@@ -54,10 +54,13 @@ class Issues(BaseModel, CanShare, CanCollection, CanThumbUp, CanComment):
         if not user:
             # 没有对应的用户，就不能创建
             raise BusinessError.ErrNoUser
-        if not content or not medias:
+        if not content and not medias:
             # 如果既没有内容又没有图片，则报错
             raise BusinessError.ErrContentEmpty
-        comment = Comment.create_instance(self, user=user, content=content, medias=medias, ip=ip)
+        if not medias:
+            comment = Comment.create_instance(self, user=user, content=content, ip=ip)
+        else:
+            comment = Comment.create_instance(self, user=user, content=content, medias=medias, ip=ip)
         return comment
 
     def delete_comments(self, user):

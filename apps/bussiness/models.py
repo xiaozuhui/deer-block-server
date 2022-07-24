@@ -68,8 +68,6 @@ class Comment(GenericModel, CanThumbUp, CanComment):
     user = models.ForeignKey(User, verbose_name="评论者", on_delete=models.CASCADE, related_name="commenter")
     content = models.TextField(verbose_name="评论内容", blank=True)
     medias = models.ManyToManyField(File, verbose_name="图片和视频", blank=True)
-    # parent_comments = models.ForeignKey('Comment', verbose_name="评论的回复", on_delete=models.DO_NOTHING,
-    #                                     related_name="parent_comments", null=True, blank=True)
     ip = models.GenericIPAddressField(verbose_name="评论ip地址", blank=True, null=True)
 
     class Meta:
@@ -77,7 +75,7 @@ class Comment(GenericModel, CanThumbUp, CanComment):
         verbose_name_plural = verbose_name
         db_table = "comment"
 
-    def create_comment(self, user, content, medias=None, ip=None):
+    def create_comment(self, user, content, medias=None, ip=None, *args, **kwargs):
         """
         创建评论
 
