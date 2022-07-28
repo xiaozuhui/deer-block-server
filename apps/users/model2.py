@@ -1,12 +1,13 @@
-from apps.base_model import BaseModel
-from .models import User
+import logging
+
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-import logging
-from django.db import models
 
+from apps.base_model import BaseModel
 from apps.consts import UserGender
 from apps.custom_models import ImageField
+from .models import User
 
 logger = logging.getLogger('django')
 

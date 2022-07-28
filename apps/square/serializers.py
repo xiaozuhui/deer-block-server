@@ -85,3 +85,15 @@ class IssuesSerializer(serializers.ModelSerializer):
         if colls and len(colls) == 1:
             return True
         return False
+
+
+class IssuesSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Issues
+        fields = "__all__"
+
+    media_detail = serializers.SerializerMethodField()
+
+    def get_media_detail(self, issues):
+        fs = issues.medias
+        return FileSerializer(fs, many=True).data

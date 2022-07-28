@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from apps.base_view import CustomViewBase, JsonResponse
+from apps.base_view import JsonResponse
 from exceptions.custom_excptions.cache_err import CacheRequestError as crerr
 from exceptions.custom_excptions.send_message import SendMessageError as smerr
 from exceptions.custom_excptions.user_error import UserError

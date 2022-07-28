@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bussiness', '0003_share_share_type'),
         ('media', '0003_auto_20220521_1115'),

@@ -9,4 +9,3 @@ class IssuesAdmin(admin.ModelAdmin):
     list_filter = ('publisher', 'status', 'created_at')
     list_per_page = 40
     ordering = ('publisher', 'created_at',)
-

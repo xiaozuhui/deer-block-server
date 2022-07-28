@@ -10,9 +10,11 @@ from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer, Colle
 from apps.consts import PublishStatus
 from apps.square import tasks
 from apps.square.models import Issues
-from apps.square.serializers import IssuesSerializer
+from apps.square.serializers import IssuesSerializer, IssuesSimpleSerializer
+from apps.users.model2 import UserProfile
 from exceptions.custom_excptions.business_error import BusinessError
 from exceptions.custom_excptions.issues_error import IssuesError
+from exceptions.custom_excptions.user_error import UserError
 
 
 class IssuesViewSet(CustomViewBase):
@@ -25,6 +27,7 @@ class IssuesViewSet(CustomViewBase):
         'retrieve': [AllowAny],
         'default': [IsAuthenticated],
         "video_list": [AllowAny],
+        "follow_issues_list": [IsAuthenticated],
     }
 
     def create(self, request, *args, **kwargs):
@@ -242,3 +245,28 @@ class IssuesViewSet(CustomViewBase):
             request (_type_): _description_
         """
         pass
+
+    @action(methods=['get'], detail=False)
+    def follow_list(self, request, *args, **kwargs):
+        """User follow someones, and can get there issues
+
+        Args:
+            request (_type_): _description_
+        """
+        user = request.user  # 获取登录的用户
+        user_profile = UserProfile.logic_objects.filter(user__id=user.id).first()
+        if not user_profile:
+            raise UserError.ErrProfileNoExist
+        follows = user_profile.follow.all()  # 我关注的人
+        follow_ids = [f.id for f in follows]
+        # 获取到所有的issues
+        issues = Issues.objects.filter(publisher__id__in=follow_ids, status=PublishStatus.PUBLISHED).order_by(
+            '-created_at')
+        page = self.paginate_queryset(issues)
+        if page:
+            ser = IssuesSimpleSerializer(page, many=True)
+            return self.get_paginated_response(ser.data)
+        ser = IssuesSimpleSerializer(issues, many=True)
+        headers = self.get_success_headers(ser.data)
+        return JsonResponse(status=http.HTTPStatus.OK,
+                            data=ser.data, headers=headers, msg="OK", code=0)

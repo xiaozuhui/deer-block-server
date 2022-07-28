@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('media', '0004_auto_20220605_0216'),
     ]
@@ -13,6 +12,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='filestorage',
             name='file_type',
-            field=models.CharField(choices=[('', '无类型'), ('video', '视频'), ('image', '图像'), ('audio', '音频'), ('other', '其他')], default='', max_length=20, verbose_name='文件类型'),
+            field=models.CharField(
+                choices=[('', '无类型'), ('video', '视频'), ('image', '图像'), ('audio', '音频'), ('other', '其他')], default='',
+                max_length=20, verbose_name='文件类型'),
         ),
     ]
