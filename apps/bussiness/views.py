@@ -89,6 +89,8 @@ class CommentViewSet(CustomViewBase):
         对于“评论”模型
 
         创建、删除、获取“子评论”
+
+        post data 参数需要issues_id
         """
         comment = self.get_object()  # 获取到对应的comment
         user = request.user  # 获取登录的用户
@@ -126,13 +128,20 @@ class CommentViewSet(CustomViewBase):
 
     @action(methods=['post', 'delete'], detail=True)
     def thumbs_up(self, request, *args, **kwargs):
+        """对评论点赞
+        post data 参数需要issues_id
+        """
         comment = self.get_object()  # 获取到对应的issues
         user = request.user  # 获取登录的用户
+        issues_id = request.data.get("issues_id")
+        if not issues_id:
+            raise BusinessError.ErrParamsNotIssuesId
         tp = comment.get_thumb_up(user)  # 如果不存在，则为[]
         data = []
         if request.method == 'POST':
             if not tp:
                 tp = comment.create_thumbs_up(user)
+                tasks.send_tb_message_2_websocket(user.id, issues_id, comment.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
             if not tp:

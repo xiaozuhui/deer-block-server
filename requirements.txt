@@ -59,12 +59,14 @@ dnspython==2.2.1
 et-xmlfile==1.1.0
 eventlet==0.33.1
 filetype==1.0.13
+flower==1.1.0
 frozenlist==1.3.0
 future==0.18.2
 gevent==21.12.0
 greenlet==1.1.2
 gunicorn==20.1.0
 httplib2==0.19.1
+humanize==4.2.3
 hyperlink==21.0.0
 idna==3.3
 importlib-metadata==4.11.3
@@ -88,6 +90,7 @@ packaging==21.3
 pika==1.2.0
 Pillow==9.1.0
 poyo==0.5.0
+prometheus-client==0.14.1
 prompt-toolkit==3.0.29
 psycopg2==2.9.3
 psycopg2-binary==2.9.1
@@ -114,6 +117,7 @@ supervisor==4.2.4
 tablib==3.0.0
 text-unidecode==1.3
 toml==0.10.2
+tornado==6.2
 Twisted==21.7.0
 txaio==21.2.1
 typing-extensions==3.10.0.2

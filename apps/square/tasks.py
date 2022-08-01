@@ -62,3 +62,29 @@ def send_comment_message_2_websocket(user_id, issues_id, comment_id, *args, **kw
     ws_client.send_message(message)
     logger.info("{username} 新发布的评论 {message} ，消息发送至websocket".format(username=user.username, message=message))
     ws_client.close_connect()
+
+
+@shared_task(bind=True)
+def send_tb_message_2_websocket(self, user_id, issues_id, *args, **kwargs):
+    """对issues进行点赞的通知
+    """
+    user = User.logic_objects.filter(id=user_id).first()
+    issues = Issues.logic_objects.filter(id=issues_id).first()
+    if not user or not issues:
+        raise ValueError("user[{}] or issues[{}] 不存在".format(user_id, issues_id))
+    to_user = issues.publisher
+    message = {
+        "from_user_id": user.id,
+        "to_user_id": to_user.id,
+        "callback": "system_message",  # 这个回调函数是用来发送到websocket的
+        "send_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "issues_title": issues.title,
+        "issues_id": issues.id,
+        "issues_url": r'/square/issues/{id}/'.format(id=issues_id),  # 对应的issues链接
+    }
+    ws_client = ConnectWebsocket(to_user.id, route="thumbsup")
+    ws_client.get_connect()
+    ws_client.send_message(message)
+    logger.info("{username} 对评论 {issues_name} 进行了点赞，消息发送至websocket".format(username=user.username,
+                                                                           issues_name=issues.title))
+    ws_client.close_connect()

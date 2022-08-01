@@ -155,6 +155,7 @@ class IssuesViewSet(CustomViewBase):
         if request.method == 'POST':
             if not tp:
                 tp = issues.create_thumbs_up(user)
+                tasks.send_tb_message_2_websocket(user.id, issues.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
             if not tp:

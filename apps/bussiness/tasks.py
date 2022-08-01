@@ -42,6 +42,47 @@ def send_comment_message_2_websocket(self, user_id, issues_id, comment_id, *args
     ws_client = ConnectWebsocket(to_user.id, route="comment")
     ws_client.get_connect()
     ws_client.send_message(message)
-    logger.info(
-        " {username} 新发布的动态 {issues_name} ，消息发送至websocket".format(username=user.username, issues_name=issues.title))
+    if target_comment:
+        logger.info('''{username} 对动态 {issues_name} 的评论 {comment_id} 进行了评论,
+                    消息发送至websocket'''.format(username=user.username, issues_name=issues.title,
+                                             comment_id=target_comment_id))
+    else:
+        logger.info("{username} 对动态 {issues_name} 进行了评论，消息发送至websocket".format(username=user.username,
+                                                                               issues_name=issues.title))
+    ws_client.close_connect()
+
+
+@shared_task(bind=True)
+def send_tb_message_2_websocket(self, user_id, issues_id, comment_id=None, *args, **kwargs):
+    """
+    comment_id可能不需要
+    如果点赞是针对comment_id就需要
+    """
+    user = User.logic_objects.filter(id=user_id).first()
+    issues = Issues.logic_objects.filter(id=issues_id).first()
+    if not user or not issues:
+        raise ValueError("user[{}] or issues[{}] 不存在".format(user_id, issues_id))
+    to_user = issues.publisher
+    message = {
+        "from_user_id": user.id,
+        "to_user_id": to_user.id,
+        "callback": "system_message",  # 这个回调函数是用来发送到websocket的
+        "send_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "issues_title": issues.title,
+        "issues_id": issues.id,
+        "issues_url": r'/square/issues/{id}/'.format(id=issues_id),  # 对应的issues链接
+    }
+    if comment_id:
+        comment = Comment.logic_objects.filter(id=comment_id).first()
+        if not comment:
+            raise ValueError("Comment[{}]不存在".format(comment_id))
+        message.update({
+            "comment_id": comment.id,
+            "comment_url": r"/business/comment/{id}/".format(id=comment_id),
+        })
+    ws_client = ConnectWebsocket(to_user.id, route="thumbsup")
+    ws_client.get_connect()
+    ws_client.send_message(message)
+    logger.info("{username} 对评论 {comment_id} 进行了点赞，消息发送至websocket".format(username=user.username,
+                                                                          comment_id=comment_id))
     ws_client.close_connect()

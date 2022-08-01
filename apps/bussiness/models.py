@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import JSONField
 
 from apps.base_model import BaseModel, GenericModel
+from apps.consts import SourceType
 from apps.interfaces.can_comment import CanComment
 from apps.interfaces.can_thumbup import CanThumbUp
 from apps.media.models import File
@@ -211,15 +212,10 @@ class Message(BaseModel):
     通知
     所有的通知将使用这个模型
     """
-    SOURCE_TYPE = (
-        ("issues", "动态消息"),
-        ("user", "用户私信"),
-        ("shop", "商城消息"),
-        ("system", "系统消息")
-    )
 
     # 消息源
-    source_type = models.CharField(choices=SOURCE_TYPE, verbose_name="消息源", max_length=10)
+    source_type = models.CharField(choices=SourceType.choices, verbose_name="消息源", max_length=10,
+                                   default=SourceType.ISSUES)
     message_content = JSONField(verbose_name="消息内容", blank=True, null=True)
     # 消息是从哪个用户来的，默认系统用户将固定为system
     from_user = models.ForeignKey(User, related_name="from_user", on_delete=models.CASCADE)
