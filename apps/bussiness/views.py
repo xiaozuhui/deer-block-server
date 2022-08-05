@@ -6,10 +6,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
-from apps.bussiness import tasks
 from apps.bussiness.filter import TagFilter
 from apps.bussiness.models import Tag, Comment, Message
 from apps.bussiness.serializers import TagSerializer, CommentSerializer, ThumbUpSerializer, MessageSerializer
+from apps.celerytask.comment_task import send_comment_message
+from apps.celerytask.thumbsup_task import send_thumbsub_message
 from apps.custom_permission import NoPermission
 from exceptions.custom_excptions.business_error import BusinessError
 from exceptions.custom_excptions.params_error import ParamsError
@@ -106,8 +107,8 @@ class CommentViewSet(CustomViewBase):
         data = []
         if request.method == 'POST':
             comment_ = comment.create_comment(user, content=content, medias=medias, ip=ip, issues_id=issues_id)
-            tasks.send_comment_message_2_websocket.delay(user_id=user.id, issues_id=issues_id, comment_id=comment_.id,
-                                                         target_comment_id=comment.id)
+            send_comment_message.delay(user_id=user.id, issues_id=issues_id, comment_id=comment_.id,
+                                       target_comment_id=comment.id)
             data = CommentSerializer(comment_, context={'user_id': request.user.id}).data
         elif request.method == 'DELETE':
             comment_id = request.data.get("comment_id", None)
@@ -141,7 +142,7 @@ class CommentViewSet(CustomViewBase):
         if request.method == 'POST':
             if not tp:
                 tp = comment.create_thumbs_up(user)
-                tasks.send_tb_message_2_websocket(user.id, issues_id, comment.id)
+                send_thumbsub_message(user.id, issues_id, comment.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
             if not tp:

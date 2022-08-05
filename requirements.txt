@@ -102,7 +102,7 @@ pycryptodome==3.14.1
 Pygments==2.11.2
 PyJWT==2.3.0
 pyOpenSSL==20.0.1
-pyparsing==3.0.8
+pyparsing==2.4.7
 python-dateutil==2.8.2
 python-slugify==6.1.1
 pytz==2022.1

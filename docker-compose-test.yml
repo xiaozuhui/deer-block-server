@@ -36,12 +36,12 @@ services:
     privileged: true
     restart: always
   message:
-    image: deer_block_message:v1
+    image: deer-block-message:v1
     container_name: deer_block_message
     ports:
       - "18000:8000"
     volumes:
-      - /var/log/deer_block_message:/opt/deer_block_message/logs/
+      - $HOME/data/deer_block_message:/opt/deer_block_message/logs/
     environment:
       # 数据库链接信息
       - POSTGRES_NAME=deer_block
@@ -60,53 +60,53 @@ services:
       - db
       - redis
     restart: always
-  deerblock:
-    image: deer-block-server:v1
-    ports:
-      - "18080:8088"
-    volumes:
-      - /var/log/deer_block_server:/opt/deer_block/logs/
-    environment:
-      # 数据库链接信息
-      - POSTGRES_NAME=deer_block
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123456
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-      # 缓存配置-默认redis
-      - CACHE_LOCATION_IP=redis
-      - CACHE_LOCATION_PORT=6379
-      # 短信发送
-      - SEND_MESSAGE_ACCESS_KEY=LTAI5tKqWQhoEfRhyJKc15yW
-      - SEND_MESSAGE_ACCESS_SECRET=FGhlSPqkSE7qmZksPUYya762j2AdaR
-      - SEND_MSG_MODE=aliyun
-      - SIGN_NAME=阿里云短信测试
-      - TEMPLATE_CODE=SMS_154950909
-      # minio
-      # TODO 上线的时候需要修改
-      - MINIO_IP=localhost
-      - MINIO_PORT=19090
-      - MINIO_SET_IP=minio
-      - MINIO_SET_PORT=9000
-      - MINIO_STORAGE_ACCESS_KEY=root
-      - MINIO_STORAGE_SECRET_KEY=1qazXDR%?
-      # websocket
-      - WS_IP=message
-      - WS_PORT=8000
-    container_name: deer_block_server
-    command:
-      - /bin/bash
-      - -c
-      - |
-        supervisord -c /opt/deer_block/supervisord.conf
-        gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application
-    links:
-      - db
-      - redis
-      - minio
-      - message
-    depends_on:
-      - db
-      - redis
-      - minio
-      - message
+#  deerblock:
+#    image: deer-block-server:v1
+#    ports:
+#      - "18080:8088"
+#    volumes:
+#      - /var/log/deer_block_server:/opt/deer_block/logs/
+#    environment:
+#      # 数据库链接信息
+#      - POSTGRES_NAME=deer_block
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=123456
+#      - POSTGRES_HOST=db
+#      - POSTGRES_PORT=5432
+#      # 缓存配置-默认redis
+#      - CACHE_LOCATION_IP=redis
+#      - CACHE_LOCATION_PORT=6379
+#      # 短信发送
+#      - SEND_MESSAGE_ACCESS_KEY=LTAI5tKqWQhoEfRhyJKc15yW
+#      - SEND_MESSAGE_ACCESS_SECRET=FGhlSPqkSE7qmZksPUYya762j2AdaR
+#      - SEND_MSG_MODE=aliyun
+#      - SIGN_NAME=阿里云短信测试
+#      - TEMPLATE_CODE=SMS_154950909
+#      # minio
+#      # TODO 上线的时候需要修改
+#      - MINIO_IP=localhost
+#      - MINIO_PORT=19090
+#      - MINIO_SET_IP=minio
+#      - MINIO_SET_PORT=9000
+#      - MINIO_STORAGE_ACCESS_KEY=root
+#      - MINIO_STORAGE_SECRET_KEY=1qazXDR%?
+#      # websocket
+#      - WS_IP=message
+#      - WS_PORT=8000
+#    container_name: deer_block_server
+#    command:
+#      - /bin/bash
+#      - -c
+#      - |
+#        supervisord -c /opt/deer_block/supervisord.conf
+#        gunicorn -c /opt/deer_block/gunicorn.conf.py deer_block.wsgi:application
+#    links:
+#      - db
+#      - redis
+#      - minio
+#      - message
+#    depends_on:
+#      - db
+#      - redis
+#      - minio
+#      - message

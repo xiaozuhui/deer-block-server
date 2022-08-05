@@ -7,8 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
 from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer, CommentSerializer
+from apps.celerytask.comment_task import send_comment_message
+from apps.celerytask.issues_task import send_issues_message
+from apps.celerytask.thumbsup_task import send_thumbsub_message
 from apps.consts import PublishStatus
-from apps.square import tasks
 from apps.square.models import Issues
 from apps.square.serializers import IssuesSerializer, IssuesSimpleSerializer
 from apps.users.model2 import UserProfile
@@ -92,9 +94,7 @@ class IssuesViewSet(CustomViewBase):
                     issues, data=data_, partial=partial, context={'user_id': request.user.id})
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
-
-                tasks.send_issues_message_2_websocket.delay(user_id=user.id, issues_id=issues.id)
-
+                send_issues_message.delay(user_id=user.id, issues_id=issues.id)
                 return JsonResponse(data=serializer.data, msg="OK", code=0, status=http.HTTPStatus.OK)
             else:
                 # 没有动态数据
@@ -120,7 +120,7 @@ class IssuesViewSet(CustomViewBase):
         self.perform_create(serializer)
 
         issues_id = serializer.data.get("id")
-        tasks.send_issues_message_2_websocket.delay(user_id=request.user.id, issues_id=issues_id)
+        send_issues_message.delay(user_id=request.user.id, issues_id=issues_id)
 
         headers = self.get_success_headers(serializer.data)
         return JsonResponse(data=serializer.data, msg="OK", code=0, status=status.HTTP_201_CREATED, headers=headers)
@@ -155,7 +155,7 @@ class IssuesViewSet(CustomViewBase):
         if request.method == 'POST':
             if not tp:
                 tp = issues.create_thumbs_up(user)
-                tasks.send_tb_message_2_websocket(user.id, issues.id)
+                send_thumbsub_message(user.id, issues.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
             if not tp:
@@ -226,7 +226,7 @@ class IssuesViewSet(CustomViewBase):
         data = []
         if request.method == 'POST':
             comment = issues.create_comment(user, content=content, medias=medias, ip=ip)
-            tasks.send_comment_message_2_websocket.delay(user_id=user.id, issues_id=issues.id, comment_id=comment.id)
+            send_comment_message.delay(user_id=user.id, issues_id=issues.id, comment_id=comment.id)
             data = CommentSerializer(comment, context={'user_id': request.user.id}).data
         elif request.method == 'DELETE':
             comment_id = request.data.get("comment_id", None)

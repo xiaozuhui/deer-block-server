@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.db import models
 from django.db.models import JSONField
 
@@ -227,3 +229,37 @@ class Message(BaseModel):
         verbose_name_plural = verbose_name
         db_table = "message"
         managed = False
+
+
+class TaskLog(BaseModel):
+    """记录任务的日志
+        什么日志，由什么模块发出，用于什么，时间，重试次数，是否成功
+    """
+    uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    celery_task_id = models.UUIDField(unique=True)  # celery任务的id
+
+    from_model = models.CharField(max_length=50, verbose_name="对应模型")
+    celery_function = models.CharField(max_length=255, verbose_name="方法名称")
+
+    retry_count = models.IntegerField(default=0, verbose_name="重试次数")
+    final_status = models.CharField(verbose_name="最终状态", default="", null=True, blank=True, max_length=10)
+    is_success = models.BooleanField(default=False, verbose_name="是否成功")
+
+    args = JSONField(verbose_name="传递参数", null=True, blank=True)
+    result = JSONField(verbose_name="返回值", null=True, blank=True)
+
+    login = models.ForeignKey(User, verbose_name="启动任务时的用户", null=True, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "任务日志"
+        verbose_name_plural = verbose_name
+        db_table = "task_log"
+
+    @classmethod
+    def init_entity(cls, task_id, func_name, kwargs):
+        entity = cls()
+        entity.celery_task_id = task_id
+        entity.celery_function = func_name
+        entity.retry_count = 0
+        entity.args = kwargs
+        return entity
