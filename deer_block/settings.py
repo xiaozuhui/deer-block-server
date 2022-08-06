@@ -31,7 +31,9 @@ INSTALLED_APPS = [
     'apps.users.apps.UserConfig',
     'apps.media.apps.MediaConfig',
     'apps.square.apps.SquareConfig',
+    'apps.artwork.apps.ProductConfig',
     'apps.bussiness.apps.BussinessConfig',
+    'apps.shop.apps.ShopConfig',
     'minio_storage',
 ]
 

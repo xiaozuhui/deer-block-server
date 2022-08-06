@@ -34,7 +34,7 @@ class UserProfile(BaseModel):
                             null=True, verbose_name="城市")
     address = models.CharField(
         max_length=215, blank=True, null=True, verbose_name="地址")
-    signature = models.CharField(
+    autograph = models.CharField(
         max_length=215, verbose_name="签名", blank=True, null=True)
 
     # 关注
