@@ -2,7 +2,7 @@ import celery
 from celery.result import AsyncResult
 from celery.utils.log import get_task_logger
 
-from apps.bussiness.models import TaskLog
+from apps.business.models import TaskLog
 
 logger = get_task_logger(__name__)
 

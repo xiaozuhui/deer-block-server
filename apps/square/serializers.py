@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.bussiness.models import Collection, Share, ThumbUp, Comment
+from apps.business.models import Collection, Share, ThumbUp, Comment
 from apps.media.serializers import FileSerializer
 from .models import Issues
 from ..users.models import User

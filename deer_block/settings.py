@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'apps.media.apps.MediaConfig',
     'apps.square.apps.SquareConfig',
     'apps.artwork.apps.ProductConfig',
-    'apps.bussiness.apps.BussinessConfig',
+    'apps.business.apps.BusinessConfig',
     'apps.shop.apps.ShopConfig',
     'minio_storage',
 ]

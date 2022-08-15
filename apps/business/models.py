@@ -5,8 +5,7 @@ from django.db.models import JSONField
 
 from apps.base_model import BaseModel, GenericModel
 from apps.consts import SourceType
-from apps.interfaces.can_comment import CanComment
-from apps.interfaces.can_thumbup import CanThumbUp
+from apps.interfaces.can_base import CanCommentBase, CanThumbUpBase
 from apps.media.models import File
 from apps.users.models import User
 from exceptions.custom_excptions.business_error import BusinessError
@@ -21,6 +20,8 @@ class Share(GenericModel):
     """
     user = models.ForeignKey(User, verbose_name="分享者", on_delete=models.CASCADE, related_name="sharer")
     share_url = models.URLField(verbose_name="分享链接", default="")
+    content = models.JSONField(verbose_name="分享信息", default=dict, null=True, blank=True)
+    backup = models.TextField(verbose_name="备注", default="", null=True, blank=True)
     # TODO 暂定
     share_type = models.CharField(max_length=20, verbose_name="分享类型", default="")
 
@@ -56,7 +57,7 @@ class ThumbUp(GenericModel):
         db_table = "thumbs_up"
 
 
-class Comment(GenericModel, CanThumbUp, CanComment):
+class Comment(GenericModel, CanThumbUpBase, CanCommentBase):
     """
     评论
     1、评论内容
@@ -65,6 +66,8 @@ class Comment(GenericModel, CanThumbUp, CanComment):
     P.S. 评论还可以进行评论，这个怎么写？
 
     评论模块也可以点赞和评论
+
+    因为CanThumbUp和CanComment的引入导致了循环应用，所以这里使用重写让这种引用消失
 
     TODO 都应该提示该回复的“父回复”的“回复者”，以及回复中被@的用户
     """
@@ -185,6 +188,7 @@ class Tag(BaseModel):
     label = models.CharField(max_length=10, verbose_name="标签")
     user = models.ForeignKey(User, verbose_name="创建者",
                              on_delete=models.CASCADE)  # 这个只是记录一下是谁创建的这个tag
+    backup = models.TextField(verbose_name="备注", default="", null=True, blank=True)
 
     class Meta:
         verbose_name = "标签"
@@ -198,9 +202,10 @@ class Category(BaseModel):
     在创建分类关联的时候，如果选择了二级分类，则需要将一级分类也关联，之后以此类推
     在ser中获取的时候，将实现一颗树
     """
-    label = models.CharField(max_length=100, verbose_name="分类")
+    label = models.CharField(max_length=100, verbose_name="分类", unique=True)
     parent_category = models.ForeignKey(
-        'Category', verbose_name="父级分类", related_name="parent", on_delete=models.CASCADE)
+        'Category', verbose_name="父级分类",
+        related_name="parent", on_delete=models.CASCADE, null=True)
     level = models.IntegerField(default=0, verbose_name="分级")  # 用于记录
 
     class Meta:

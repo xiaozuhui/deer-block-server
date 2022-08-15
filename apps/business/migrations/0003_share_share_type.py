@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('bussiness', '0002_share_share_url'),
+        ('business', '0002_share_share_url'),
     ]
 
     operations = [

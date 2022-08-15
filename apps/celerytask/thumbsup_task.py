@@ -3,7 +3,7 @@ import datetime
 from celery.result import AsyncResult
 from celery.utils.log import get_task_logger
 
-from apps.bussiness.models import Comment, TaskLog
+from apps.business.models import Comment, TaskLog
 from apps.celerytask.base_task import BaseTask
 from apps.consts import SourceType
 from apps.square.models import Issues

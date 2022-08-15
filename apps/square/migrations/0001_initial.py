@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('media', '0003_auto_20220521_1115'),
-        ('bussiness', '0001_initial'),
+        ('business', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                                   max_length=20, verbose_name='状态')),
                 ('content', models.TextField(verbose_name='动态内容')),
                 ('version', models.IntegerField(default=0, verbose_name='版本')),
-                ('categories', models.ManyToManyField(to='bussiness.Category', verbose_name='分类')),
+                ('categories', models.ManyToManyField(to='business.Category', verbose_name='分类')),
                 ('medias', models.ManyToManyField(to='media.File', verbose_name='图片和视频')),
                 ('origin',
                  models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='origin_issues',
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
                 ('publisher',
                  models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL,
                                    verbose_name='发布者')),
-                ('tags', models.ManyToManyField(to='bussiness.Tag', verbose_name='标签')),
+                ('tags', models.ManyToManyField(to='business.Tag', verbose_name='标签')),
             ],
             options={
                 'verbose_name': '动态',

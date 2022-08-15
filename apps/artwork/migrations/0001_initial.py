@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('media', '0006_alter_file_options'),
-        ('bussiness', '0006_tasklog'),
+        ('business', '0006_tasklog'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                 ('is_original', models.BooleanField(default=True, verbose_name='是否原创')),
                 ('is_uploader_has', models.BooleanField(default=True, verbose_name='是否上传者拥有')),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to='artwork.author', verbose_name='作家')),
-                ('category', models.ManyToManyField(to='bussiness.Category', verbose_name='分类')),
+                ('category', models.ManyToManyField(to='business.Category', verbose_name='分类')),
                 ('medias', models.ManyToManyField(blank=True, to='media.File', verbose_name='图片或视频')),
                 ('uploader', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='art_uploader', to=settings.AUTH_USER_MODEL, verbose_name='上传者')),
             ],

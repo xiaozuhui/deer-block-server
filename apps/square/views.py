@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
-from apps.bussiness.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer, CommentSerializer
+from apps.business.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer, CommentSerializer
 from apps.celerytask.comment_task import send_comment_message
 from apps.celerytask.issues_task import send_issues_message
 from apps.celerytask.thumbsup_task import send_thumbsub_message
@@ -229,11 +229,21 @@ class IssuesViewSet(CustomViewBase):
             send_comment_message.delay(user_id=user.id, issues_id=issues.id, comment_id=comment.id)
             data = CommentSerializer(comment, context={'user_id': request.user.id}).data
         elif request.method == 'DELETE':
-            comment_id = request.data.get("comment_id", None)
+            # 从query中获取comment_id
+            comment_id = request.query_params.get("comment_id", None)
             if not comment_id:
                 raise BusinessError.ErrNoCommentId
             issues.delete_comment(comment_id, user)
         return JsonResponse(data=data, msg="OK", code=0, status=200)
+
+    def get_comment(self, request, *args, **kwargs):
+        """
+        获取这个issues下所有的评论
+        包括评论下的子评论
+
+        可分页，子评论分页
+        """
+        pass
 
     @action(methods=['get'], detail=False)
     def video_list(self, request, *args, **kwargs):

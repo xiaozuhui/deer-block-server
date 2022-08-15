@@ -6,9 +6,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
-from apps.bussiness.filter import TagFilter
-from apps.bussiness.models import Tag, Comment, Message
-from apps.bussiness.serializers import TagSerializer, CommentSerializer, ThumbUpSerializer, MessageSerializer
+from apps.business.filter import TagFilter
+from apps.business.models import Tag, Comment, Message
+from apps.business.serializers import TagSerializer, CommentSerializer, ThumbUpSerializer, MessageSerializer
 from apps.celerytask.comment_task import send_comment_message
 from apps.celerytask.thumbsup_task import send_thumbsub_message
 from apps.custom_permission import NoPermission
@@ -59,7 +59,6 @@ class CommentViewSet(CustomViewBase):
         content_type = issues
         content_id = 2
         """
-        user = request.user
         content_type = request.query_params.get("content_type", None)
         if not content_type:
             err = ParamsError.ErrPostParams

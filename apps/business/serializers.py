@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.bussiness.models import Category, Collection, Share, Tag, ThumbUp, Comment, Message
+from apps.business.models import Category, Collection, Share, Tag, ThumbUp, Comment, Message, TaskLog
 from apps.users.models import User
 
 
@@ -94,3 +94,11 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = "__all__"
+
+
+class TaskLogSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TaskLog
+        fields = "__all__"
+

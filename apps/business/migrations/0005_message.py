@@ -7,7 +7,7 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bussiness', '0004_auto_20220617_1722'),
+        ('business', '0004_auto_20220617_1722'),
     ]
 
     operations = [

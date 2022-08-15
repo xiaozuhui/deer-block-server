@@ -117,7 +117,7 @@ class Migration(migrations.Migration):
                 ('level', models.IntegerField(default=0, verbose_name='分级')),
                 ('parent_category',
                  models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parent',
-                                   to='bussiness.category', verbose_name='父级分类')),
+                                   to='business.category', verbose_name='父级分类')),
             ],
             options={
                 'verbose_name': '分类',

@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import include
 from rest_framework import routers
 
-from apps.bussiness.views import TagViewSet, CommentViewSet, MessageViewSet
+from apps.business.views import TagViewSet, CommentViewSet, MessageViewSet
 
 app_name = "business"
 

@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('artwork', '0001_initial'),
-        ('bussiness', '0006_tasklog'),
+        ('business', '0006_tasklog'),
     ]
 
     operations = [
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                 ('deleted_at', models.DateTimeField(blank=True, null=True, verbose_name='数据失效时间')),
                 ('amount', models.DecimalField(decimal_places=4, max_digits=32, verbose_name='价格')),
                 ('art', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='artwork.art', verbose_name='艺术品')),
-                ('tags', models.ManyToManyField(to='bussiness.Tag', verbose_name='标签')),
+                ('tags', models.ManyToManyField(to='business.Tag', verbose_name='标签')),
             ],
             options={
                 'abstract': False,

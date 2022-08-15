@@ -1,6 +1,6 @@
 import django_filters
 
-from apps.bussiness.models import Tag
+from apps.business.models import Tag
 
 
 class TagFilter(django_filters.FilterSet):

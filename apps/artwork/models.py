@@ -1,7 +1,7 @@
 from django.db import models
 
 from apps.base_model import BaseModel
-from apps.bussiness.models import Category
+from apps.business.models import Category, Tag
 from apps.interfaces.can_collection import CanCollection
 from apps.interfaces.can_share import CanShare
 from apps.media.models import File
@@ -19,6 +19,8 @@ class Art(BaseModel, CanShare, CanCollection):
         - 上传者
         - 是否上传者拥有
         原创意味着拥有
+
+    艺术品和商品是一对一的，艺术品转为商品，就是创建为商品，或是商品的上架
     """
     title = models.CharField(verbose_name="艺术品标题", max_length=255, default="无题")
     author = models.ForeignKey("Author", verbose_name="作家", on_delete=models.DO_NOTHING)
@@ -29,9 +31,19 @@ class Art(BaseModel, CanShare, CanCollection):
     medias = models.ManyToManyField(File, verbose_name="图片或视频", blank=True)
 
     category = models.ManyToManyField(Category, verbose_name="分类")
+    tags = models.ManyToManyField(Tag, verbose_name="标签")
+
+    last_width = models.FloatField(verbose_name="最宽处宽度", default=0, help_text="单位厘米(cm)")
+    last_length = models.FloatField(verbose_name="最长处长度", default=0, help_text="单位厘米(cm)")
+    last_height = models.FloatField(verbose_name="最高处高度", default=0, help_text="单位厘米(cm)")
+
+    class Meta:
+        verbose_name = "艺术品"
+        verbose_name_plural = verbose_name
+        db_table = "art"
 
 
-class Author(BaseModel, CanShare, CanCollection):
+class Author(BaseModel, CanCollection):
     """
     作者信息，可以为User本身，也可以是写入信息
     """
@@ -47,4 +59,3 @@ class Author(BaseModel, CanShare, CanCollection):
         verbose_name = "作者信息"
         verbose_name_plural = verbose_name
         db_table = "author"
-

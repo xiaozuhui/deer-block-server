@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('bussiness', '0001_initial'),
+        ('business', '0001_initial'),
         ('media', '0003_auto_20220521_1115'),
         ('square', '0001_initial'),
     ]
@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='issues',
             name='categories',
-            field=models.ManyToManyField(blank=True, null=True, to='bussiness.Category', verbose_name='分类'),
+            field=models.ManyToManyField(blank=True, null=True, to='business.Category', verbose_name='分类'),
         ),
         migrations.AlterField(
             model_name='issues',
@@ -31,6 +31,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='issues',
             name='tags',
-            field=models.ManyToManyField(blank=True, null=True, to='bussiness.Tag', verbose_name='标签'),
+            field=models.ManyToManyField(blank=True, null=True, to='business.Tag', verbose_name='标签'),
         ),
     ]

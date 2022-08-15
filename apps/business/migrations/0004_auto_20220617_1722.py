@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('media', '0006_alter_file_options'),
         ('contenttypes', '0002_remove_content_type_name'),
-        ('bussiness', '0003_share_share_type'),
+        ('business', '0003_share_share_type'),
     ]
 
     operations = [
