@@ -60,13 +60,13 @@ class CommentViewSet(CustomViewBase):
         content_id = 2
         """
         user = request.user
-        content_type = request.data.get("content_type", None)
+        content_type = request.query_params.get("content_type", None)
         if not content_type:
             err = ParamsError.ErrPostParams
             err.params = {"content_type": content_type}
             err.message = "参数{}为空".format("content_type")
             raise err
-        content_id = request.data.get("content_id", None)
+        content_id = request.query_params.get("content_id", None)
         if not content_id:
             err = ParamsError.ErrPostParams
             err.params = {"content_id": content_id}
