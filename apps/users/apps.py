@@ -19,6 +19,7 @@ def init_superuser(sender, *args, **kwargs):
         'username': "neo",
         "phone_number": "00000000000",
         "password": make_password("1qazXDR%!admin"),
+        "user_code": "system001",
         "is_superuser": True,
         "is_staff": True,
         "is_active": True,

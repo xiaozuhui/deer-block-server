@@ -180,9 +180,11 @@ class RegisterView(GenericAPIView):
                 raise smerr.ValidCodeEmpty
             if token != vcode:
                 raise smerr.ValidCodeWrong
+            username_, user_code = get_user_name(phone_number)
             return {
                 "phone_number": phone_number,
-                "username": username if username else get_user_name(phone_number),
+                "username": username if username else username_,
+                "user_code": user_code,
                 "is_active": True,
                 "is_staff": False,
                 "is_superuser": False,
@@ -229,6 +231,7 @@ class RegisterView(GenericAPIView):
             data = self._register(phone_number, vcode, username)
             user = User()
             user.username = data["username"]
+            user.user_code = data["user_code"]
             user.set_password(get_user_password())
             user.phone_number = data["phone_number"]
             user.save()
