@@ -1,11 +1,12 @@
 import random
 import string
+from typing import Tuple
 
 from apps.users.models import User
 from utils import consts
 
 
-def get_user_name(phone_number: str = "") -> tuple[str, str]:
+def get_user_name(phone_number: str = "") -> Tuple[str, str]:
     """返回系统生成的用户名
 
     Args:
