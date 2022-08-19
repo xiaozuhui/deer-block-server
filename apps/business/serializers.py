@@ -70,6 +70,9 @@ class CommentSerializer(GenericSerializer):
     # 该评论的点赞次数
     thumbs_up_count = serializers.SerializerMethodField()
 
+    # 评论的【评论】
+    target_comment = serializers.SerializerMethodField()
+
     def get_thumbs_up_count(self, comment):
         count = ThumbUp.get_count(comment)
         return count
@@ -89,6 +92,15 @@ class CommentSerializer(GenericSerializer):
             return True
         return False
 
+    def get_target_comment(self, comment):
+        comment = comment.get_target_comment()
+        if not comment:
+            return {}
+        return {
+            "comment_id": comment.id,
+            "comment_content": comment.content,
+        }
+
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,8 +109,6 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class TaskLogSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = TaskLog
         fields = "__all__"
-

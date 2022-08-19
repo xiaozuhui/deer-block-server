@@ -93,19 +93,23 @@ class CommentViewSet(CustomViewBase):
         post data 参数需要issues_id
         """
         comment = self.get_object()  # 获取到对应的comment
-        user = request.user  # 获取登录的用户
-        issues_id = request.data.get("issues_id")
-        if not issues_id:
-            raise BusinessError.ErrParamsNotIssuesId
-        content = request.data.get("content", "")
-        medias = request.data.get("medias", None)
-        if request.META.get('HTTP_X_FORWARDED_FOR'):
-            ip = request.META.get("HTTP_X_FORWARDED_FOR")
-        else:
-            ip = request.data.get('ip', None)
+        user = request.user  # 获取登录的用
         data = []
         if request.method == 'POST':
-            comment_ = comment.create_comment(user, content=content, medias=medias, ip=ip, issues_id=issues_id)
+            issues_id = request.data.get("issues_id")
+            if not issues_id:
+                raise BusinessError.ErrParamsNotIssuesId
+            content = request.data.get("content", "")
+            medias = request.data.get("medias", None)
+            if request.META.get('HTTP_X_FORWARDED_FOR'):
+                ip = request.META.get("HTTP_X_FORWARDED_FOR")
+            else:
+                ip = request.data.get('ip', None)
+            parent_comment_id = request.data.get("parent_comment_id", None)
+            if not parent_comment_id:
+                raise BusinessError.ErrParentCommentIDEmpty
+            comment_ = comment.create_comment(user, content=content, medias=medias, ip=ip,
+                                              parent_comment_id=parent_comment_id)
             send_comment_message.delay(user_id=user.id, issues_id=issues_id, comment_id=comment_.id,
                                        target_comment_id=comment.id)
             data = CommentSerializer(comment_, context={'user_id': request.user.id}).data
@@ -117,12 +121,12 @@ class CommentViewSet(CustomViewBase):
         else:
             # 这里的获取是指comment下的所有子评论
             # 要不要分页？
-            sub_comment = comment.get_comments()
-            page = self.paginate_queryset(sub_comment)
+            sub_comments = comment.get_all_level_comments()
+            page = self.paginate_queryset(sub_comments)
             if page:
                 ser = self.get_serializer(page, many=True)
                 return self.get_paginated_response(ser.data)
-            ser = self.get_serializer(sub_comment, many=True)
+            ser = self.get_serializer(sub_comments, many=True)
             data = ser.data
         return JsonResponse(status=http.HTTPStatus.OK, data=data, msg="OK", code=0)
 

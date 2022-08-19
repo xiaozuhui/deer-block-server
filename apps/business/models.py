@@ -1,7 +1,6 @@
-from uuid import uuid4
-
 from django.db import models
 from django.db.models import JSONField
+from uuid import uuid4
 
 from apps.base_model import BaseModel, GenericModel
 from apps.consts import SourceType
@@ -57,6 +56,18 @@ class ThumbUp(GenericModel):
         db_table = "thumbs_up"
 
 
+"""
+1、评论的保存，需要保存唯一的父级评论，也就是issues下的第一级评论
+2、评论的返回，不仅仅是评论本身，我们需要：
+    1、评论的用户数据
+    2、评论的内容
+    3、当前登陆的用户是否关注评论者的，评论者是否和当前用户互相关注
+    4、当前登陆用户是否给这条评论点了赞
+    5、改评论是“谁”评论了“谁”，并且指向被评论的评论
+    6、所有的非一级评论，都需要被平铺为一个列表，而非一个树形结构
+"""
+
+
 class Comment(GenericModel, CanThumbUpBase, CanCommentBase):
     """
     评论
@@ -75,6 +86,9 @@ class Comment(GenericModel, CanThumbUpBase, CanCommentBase):
     content = models.TextField(verbose_name="评论内容", blank=True)
     medias = models.ManyToManyField(File, verbose_name="图片和视频", blank=True)
     ip = models.GenericIPAddressField(verbose_name="评论ip地址", blank=True, null=True)
+    # 第一级评论，所有的评论都应该有第一级评论
+    first_class_comment = models.ForeignKey('Comment', verbose_name="第一级评论",
+                                            on_delete=models.CASCADE, related_name="first_comment", null=True)
 
     class Meta:
         verbose_name = "评论"
@@ -89,14 +103,34 @@ class Comment(GenericModel, CanThumbUpBase, CanCommentBase):
         medias: list of File id 保存的文件id
         parent_comments: 父评论id
         ip: ip地址
+
+        对于评论的评论，还需要一个父级评论
         """
         if not user:
             # 没有对应的用户，就不能创建
             raise BusinessError.ErrNoUser
-        if not content or not medias:
+        if not content and not medias:
             # 如果既没有内容又没有图片，则报错
             raise BusinessError.ErrContentEmpty
-        comment = Comment.create_instance(self, user=user, content=content, medias=medias, ip=ip)
+        # 这个评论id是指所有子评论的最高级评论，即issues下的第一层评论
+        parent_comment_id = kwargs["parent_comment_id"]
+        if not parent_comment_id:
+            raise BusinessError.ErrParentCommentIDEmpty
+        parent_comment = Comment.logic_objects.filter(id=parent_comment_id).first()
+        if not parent_comment:
+            raise BusinessError.ErrParentCommentEmpty
+        # 创建
+        if not medias:
+            comment = Comment.create_instance(self, user=user,
+                                              content=content,
+                                              ip=ip,
+                                              first_class_comment=parent_comment)
+        else:
+            comment = Comment.create_instance(self, user=user,
+                                              content=content,
+                                              medias=medias,
+                                              ip=ip,
+                                              first_class_comment=parent_comment)
         return comment
 
     def delete_comments(self, user):
@@ -123,6 +157,13 @@ class Comment(GenericModel, CanThumbUpBase, CanCommentBase):
         """
         c = Comment.get_instances(self)
         return c
+
+    def get_all_level_comments(self):
+        """
+        获取某个comment下的所有级comments
+        """
+        comments = Comment.logic_objects.filter(first_class_comment__id=self.id)
+        return comments
 
     def get_user_comments(self, user):
         c = Comment.get_instances(self).filter(user__id=user.id)
@@ -182,6 +223,25 @@ class Comment(GenericModel, CanThumbUpBase, CanCommentBase):
         """
         tps = ThumbUp.get_instances(self)
         return tps
+
+    def get_target_comment(self):
+        """
+        获取该评论所评论的评论
+
+        只针对Comment类
+        """
+        content_type = self.content_type
+        if content_type.model != "comment":
+            # 如果不是评论，不需要
+            return None
+        co = self.content_object
+        if not isinstance(co, Comment):
+            return None
+        if not co.first_class_comment:
+            # 如果没有上级评论，不需要
+            return None
+        return co
+
 
 
 class Tag(BaseModel):

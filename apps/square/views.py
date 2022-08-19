@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
 from apps.business.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer, CommentSerializer
+from apps.business.views import CommentViewSet
 from apps.celerytask.comment_task import send_comment_message
 from apps.celerytask.issues_task import send_issues_message
 from apps.celerytask.thumbsup_task import send_thumbsub_message
@@ -214,17 +215,20 @@ class IssuesViewSet(CustomViewBase):
         """
         写评论或是删除评论
         删除评论需要评论的id
+
+        获取评论，只获取第一级评论
         """
         issues = self.get_object()  # 获取到对应的issues
         user = request.user  # 获取登录的用户
-        content = request.data.get("content", "")
-        medias = request.data.get("medias", None)
-        if request.META.get('HTTP_X_FORWARDED_FOR'):
-            ip = request.META.get("HTTP_X_FORWARDED_FOR")
-        else:
-            ip = request.data.get('ip', None)
         data = []
         if request.method == 'POST':
+            content = request.data.get("content", "")
+            medias = request.data.get("medias", None)
+            if request.META.get('HTTP_X_FORWARDED_FOR'):
+                ip = request.META.get("HTTP_X_FORWARDED_FOR")
+            else:
+                ip = request.data.get('ip', None)
+            # issues的评论不需要parent_comment
             comment = issues.create_comment(user, content=content, medias=medias, ip=ip)
             send_comment_message.delay(user_id=user.id, issues_id=issues.id, comment_id=comment.id)
             data = CommentSerializer(comment, context={'user_id': request.user.id}).data
@@ -235,15 +239,6 @@ class IssuesViewSet(CustomViewBase):
                 raise BusinessError.ErrNoCommentId
             issues.delete_comment(comment_id, user)
         return JsonResponse(data=data, msg="OK", code=0, status=200)
-
-    def get_comment(self, request, *args, **kwargs):
-        """
-        获取这个issues下所有的评论
-        包括评论下的子评论
-
-        可分页，子评论分页
-        """
-        pass
 
     @action(methods=['get'], detail=False)
     def video_list(self, request, *args, **kwargs):

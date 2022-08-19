@@ -49,7 +49,7 @@ class CanComment(CanCommentBase):
 
     def get_comments(self):
         """
-        获取某个对象下的comment
+        获取某个comment对象下的comment
         """
         c = Comment.get_instances(self)
         return c

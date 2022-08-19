@@ -70,3 +70,17 @@ class BusinessError(CustomErrorEnum, APIException):
         ErrorType.BUSINESS,
         level=Level.ERROR
     )
+
+    ErrParentCommentIDEmpty = CustomError(
+        "父级评论id为空",
+        "EI011",
+        ErrorType.BUSINESS,
+        level=Level.ERROR,
+    )
+
+    ErrParentCommentEmpty = CustomError(
+        "父级评论为空",
+        "EI012",
+        ErrorType.BUSINESS,
+        level=Level.ERROR,
+    )

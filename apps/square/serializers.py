@@ -1,9 +1,14 @@
+import logging
+
 from rest_framework import serializers
 
 from apps.business.models import Collection, Share, ThumbUp, Comment
 from apps.media.serializers import FileSerializer
 from .models import Issues
+from ..users.model2 import UserProfile
 from ..users.models import User
+
+logger = logging.getLogger(__name__)
 
 
 class IssuesSerializer(serializers.ModelSerializer):
@@ -20,6 +25,8 @@ class IssuesSerializer(serializers.ModelSerializer):
         read_only=True, source="publisher.id")
     publisher_name = serializers.CharField(
         read_only=True, source="publisher.username")
+    # 当前用户是否关注了该发布者
+    is_publisher_follow = serializers.SerializerMethodField()
 
     media_detail = serializers.SerializerMethodField()
 
@@ -85,6 +92,25 @@ class IssuesSerializer(serializers.ModelSerializer):
         if colls and len(colls) == 1:
             return True
         return False
+
+    def get_is_publisher_follow(self, issues):
+        user_id = self.context.get('user_id', None)
+        if not user_id:
+            logger.error("context上下文没有user_id")
+            return False
+        user = User.logic_objects.filter(id=user_id).first()
+        if not user:
+            logger.error(f"user_id[{user_id}]找不到User")
+            return False
+        publisher = issues.publisher
+        user_profile = UserProfile.logic_objects.filter(user__id=user.id).first()
+        if not user_profile:
+            logger.error(f"user_id[{user_id}]找不到Profile")
+            return False
+        follows = user_profile.follow.all()
+        if publisher not in follows:
+            return False
+        return True
 
 
 class IssuesSimpleSerializer(serializers.ModelSerializer):
