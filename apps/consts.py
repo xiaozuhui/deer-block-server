@@ -36,3 +36,18 @@ class SourceType(TextChoices):
     SYSTEM = "system", "系统消息"
     COMMENT = "comment", "评论消息"
     THUMB_UP = "thumbs_up", "点赞消息"
+
+
+class PaymentType(TextChoices):
+    WEIXIN = "weixin", "微信支付"
+    ALIPAY = "alipay", "支付宝"
+    UNION_PAY = "union_pay", "银联支付"
+
+
+class UpgradeUserLevelMethod(TextChoices):
+    ISSUES = "发布动态", "发布动态"
+    COMMENT = "评论", "评论"
+    THUMBS_UP = "点赞", "点赞"
+    ART = "发表作品", "发表作品"
+    BE_COMMENTED = "被评论", "被评论"
+    BE_THUMBS_UP = "被点赞", "被点赞"

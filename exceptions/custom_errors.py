@@ -19,6 +19,7 @@ class ErrorType(Enum):
     ISSUES = "issues"
     BUSINESS = "business"
     PARAMS = "params"
+    LEVEL = "level"
 
 
 class Level(Enum):

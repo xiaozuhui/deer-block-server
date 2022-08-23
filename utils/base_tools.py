@@ -33,6 +33,17 @@ def singleton(cls, *args, **kwargs):
     return _singleton
 
 
+class Singleton(object):
+    def __init__(self, cls):
+        self._cls = cls
+        self._instance = {}
+
+    def __call__(self):
+        if self._cls not in self._instance:
+            self._instance[self._cls] = self._cls()
+        return self._instance[self._cls]
+
+
 def to_human_size(size):
     """将bit大小转换为可读的大小
 

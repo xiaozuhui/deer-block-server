@@ -1,5 +1,6 @@
 import http
 
+from django.db import transaction
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -7,13 +8,13 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.base_view import CustomViewBase, JsonResponse
 from apps.business.serializers import ShareSerializer, ThumbUpSerializer, CollectionSerializer, CommentSerializer
-from apps.business.views import CommentViewSet
 from apps.celerytask.comment_task import send_comment_message
 from apps.celerytask.issues_task import send_issues_message
 from apps.celerytask.thumbsup_task import send_thumbsub_message
-from apps.consts import PublishStatus
+from apps.consts import PublishStatus, UpgradeUserLevelMethod
 from apps.square.models import Issues
 from apps.square.serializers import IssuesSerializer, IssuesSimpleSerializer
+from apps.users.level_manager import LevelManager
 from apps.users.model2 import UserProfile
 from exceptions.custom_excptions.business_error import BusinessError
 from exceptions.custom_excptions.issues_error import IssuesError
@@ -32,6 +33,7 @@ class IssuesViewSet(CustomViewBase):
         "video_list": [AllowAny],
         "follow_issues_list": [IsAuthenticated],
     }
+    level_manager = LevelManager()
 
     def create(self, request, *args, **kwargs):
         """
@@ -70,6 +72,7 @@ class IssuesViewSet(CustomViewBase):
                             data=ser.data, headers=headers, msg="OK", code=0)
 
     @action(methods=['post'], detail=False)
+    @transaction.atomic
     def publishing(self, request, *args, **kwargs):
         user = request.user
         id_ = request.data.get('id', None)  # 存在这个就需要发布，否则就是创建(创建的时候就是发布)
@@ -95,6 +98,7 @@ class IssuesViewSet(CustomViewBase):
                     issues, data=data_, partial=partial, context={'user_id': request.user.id})
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
+                self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.ISSUES)
                 send_issues_message.delay(user_id=user.id, issues_id=issues.id)
                 return JsonResponse(data=serializer.data, msg="OK", code=0, status=http.HTTPStatus.OK)
             else:
@@ -121,11 +125,13 @@ class IssuesViewSet(CustomViewBase):
         self.perform_create(serializer)
 
         issues_id = serializer.data.get("id")
+        self.level_manager.inc_exp(request.user.id, UpgradeUserLevelMethod.ISSUES)
         send_issues_message.delay(user_id=request.user.id, issues_id=issues_id)
 
         headers = self.get_success_headers(serializer.data)
         return JsonResponse(data=serializer.data, msg="OK", code=0, status=status.HTTP_201_CREATED, headers=headers)
 
+    @transaction.atomic
     def update(self, request, *args, **kwargs):
         """更新必然要形成新的副本
         """
@@ -140,6 +146,7 @@ class IssuesViewSet(CustomViewBase):
         return resp
 
     @action(methods=['post', 'get', 'delete'], detail=True)
+    @transaction.atomic
     def thumbs_up(self, request, *args, **kwargs):
         """点赞
         post:  创建点赞
@@ -156,6 +163,8 @@ class IssuesViewSet(CustomViewBase):
         if request.method == 'POST':
             if not tp:
                 tp = issues.create_thumbs_up(user)
+                self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.THUMBS_UP)
+                self.level_manager.inc_exp(issues.publisher.id, UpgradeUserLevelMethod.BE_THUMBS_UP)
                 send_thumbsub_message(user.id, issues.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
@@ -167,6 +176,7 @@ class IssuesViewSet(CustomViewBase):
         return JsonResponse(data=data, msg="OK", code=0, status=200)
 
     @action(methods=['post', 'get', 'delete'], detail=True)
+    @transaction.atomic
     def collection(self, request, *args, **kwargs):
         """收藏
         post:  创建收藏
@@ -211,6 +221,7 @@ class IssuesViewSet(CustomViewBase):
         return JsonResponse(data=data, msg="OK", code=0, status=200)
 
     @action(methods=['post', 'delete'], detail=True)
+    @transaction.atomic
     def comment(self, request, *args, **kwargs):
         """
         写评论或是删除评论
@@ -230,6 +241,9 @@ class IssuesViewSet(CustomViewBase):
                 ip = request.data.get('ip', None)
             # issues的评论不需要parent_comment
             comment = issues.create_comment(user, content=content, medias=medias, ip=ip)
+            # 需要给评论者和被评论者增加经验
+            self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.COMMENT)
+            self.level_manager.inc_exp(issues.publisher.id, UpgradeUserLevelMethod.BE_COMMENTED)
             send_comment_message.delay(user_id=user.id, issues_id=issues.id, comment_id=comment.id)
             data = CommentSerializer(comment, context={'user_id': request.user.id}).data
         elif request.method == 'DELETE':

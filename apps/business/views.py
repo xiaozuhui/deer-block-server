@@ -11,7 +11,9 @@ from apps.business.models import Tag, Comment, Message
 from apps.business.serializers import TagSerializer, CommentSerializer, ThumbUpSerializer, MessageSerializer
 from apps.celerytask.comment_task import send_comment_message
 from apps.celerytask.thumbsup_task import send_thumbsub_message
+from apps.consts import UpgradeUserLevelMethod
 from apps.custom_permission import NoPermission
+from apps.users.level_manager import LevelManager
 from exceptions.custom_excptions.business_error import BusinessError
 from exceptions.custom_excptions.params_error import ParamsError
 
@@ -38,6 +40,7 @@ class CommentViewSet(CustomViewBase):
     """
     queryset = Comment.logic_objects.all()
     serializer_class = CommentSerializer
+    level_manager = LevelManager()
 
     # list和retrieve操作是可以任何人都请求的，但是其他操作，只能本人从评论处操作，包括创建、和删除
     permission_classes_by_action = {
@@ -110,6 +113,8 @@ class CommentViewSet(CustomViewBase):
                 raise BusinessError.ErrParentCommentIDEmpty
             comment_ = comment.create_comment(user, content=content, medias=medias, ip=ip,
                                               parent_comment_id=parent_comment_id)
+            self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.COMMENT)
+            self.level_manager.inc_exp(comment.user.id, UpgradeUserLevelMethod.BE_COMMENTED)
             send_comment_message.delay(user_id=user.id, issues_id=issues_id, comment_id=comment_.id,
                                        target_comment_id=comment.id)
             data = CommentSerializer(comment_, context={'user_id': request.user.id}).data
@@ -145,6 +150,8 @@ class CommentViewSet(CustomViewBase):
         if request.method == 'POST':
             if not tp:
                 tp = comment.create_thumbs_up(user)
+                self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.THUMBS_UP)
+                self.level_manager.inc_exp(comment.user.id, UpgradeUserLevelMethod.BE_THUMBS_UP)
                 send_thumbsub_message(user.id, issues_id, comment.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
