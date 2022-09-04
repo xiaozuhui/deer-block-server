@@ -1,7 +1,6 @@
 from django.db import models
 
 from apps.consts import UpgradeUserLevelMethod
-from utils.gen_code import get_level_code
 
 
 class Level(models.Model):

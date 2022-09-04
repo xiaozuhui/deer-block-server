@@ -1,6 +1,7 @@
+from uuid import uuid4
+
 from django.db import models
 from django.db.models import JSONField
-from uuid import uuid4
 
 from apps.base_model import BaseModel, GenericModel
 from apps.consts import SourceType
@@ -241,7 +242,6 @@ class Comment(GenericModel, CanThumbUpBase, CanCommentBase):
             # 如果没有上级评论，不需要
             return None
         return co
-
 
 
 class Tag(BaseModel):

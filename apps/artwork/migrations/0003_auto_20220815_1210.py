@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('business', '0008_alter_category_parent_category'),
         ('artwork', '0002_auto_20220815_1045'),

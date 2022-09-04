@@ -17,4 +17,3 @@ class LevelError(CustomErrorEnum, APIException):
         ErrorType.LEVEL,
         ""
     )
-
