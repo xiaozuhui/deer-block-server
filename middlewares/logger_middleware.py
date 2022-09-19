@@ -33,3 +33,6 @@ class LogMiddle(MiddlewareMixin):
         logger.info('%s %s %s %s' % (localtime, path, method, status_code))
         logger.info('Elapsed Time: %s ms' % (e_time * 1000))
         return response
+
+    def process_exception(self, request, exception):
+        logging.error(exception)
