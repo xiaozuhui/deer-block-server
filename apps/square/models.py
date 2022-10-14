@@ -17,7 +17,7 @@ class Issues(BaseModel, CanShare, CanCollection, CanThumbUp, CanComment):
     动态
     对于一个动态来说，点赞、收藏、回复
     """
-    title = models.CharField(max_length=225, verbose_name="动态标题")
+    title = models.CharField(max_length=225, verbose_name="动态标题", null=True, blank=True)
     publisher = models.ForeignKey(User, verbose_name="发布者", on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=PublishStatus.choices, verbose_name="状态",
                               default=PublishStatus.DRAFT)
