@@ -24,9 +24,11 @@ class LevelManager:
             1、是否经验已经达到了；2、是否已经到顶级
         2、升级后，经验值需要归零
         """
-        user_profile.user_level += 1
-        user_profile.has_exp = add_exp - next_exp
-        user_profile.save()
+        levels = user_profile.level_group.levels.all().order_by("level")
+        if user_profile.user_level <= levels[-1]:
+            user_profile.user_level += 1
+            user_profile.has_exp = add_exp - next_exp
+            user_profile.save()
 
     def inc_exp(self, user_id, operator: str):
         """
@@ -49,7 +51,7 @@ class LevelManager:
         has_exp = user_profile.has_exp
         # 增加后的经验
         add_exp = has_exp + exp
-        levels = {level.level: level for level in um.levels.all()}
+        levels = {level.level: level for level in user_profile.level_group.levels.all()}
         next_level = None
         if user_profile.user_level == 0:
             next_level = levels[1]  # 如果用户是0级，则下一极就是1极
@@ -57,7 +59,7 @@ class LevelManager:
             # 如果是最大级，那么就不需要再升级了
             return
         else:
-            for level in um.levels.all():
+            for level in user_profile.level_group.levels.all():
                 if level.level == user_profile.user_level:
                     next_level = level.next_level
                     break
