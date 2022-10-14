@@ -21,7 +21,7 @@ class Issues(BaseModel, CanShare, CanCollection, CanThumbUp, CanComment):
     publisher = models.ForeignKey(User, verbose_name="发布者", on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=PublishStatus.choices, verbose_name="状态",
                               default=PublishStatus.DRAFT)
-    content = models.TextField(verbose_name="动态内容")
+    content = models.TextField(verbose_name="动态内容", null=True, blank=True)
     medias = models.ManyToManyField(File, verbose_name="图片和视频", blank=True)
     tags = models.ManyToManyField(Tag, verbose_name="标签", blank=True)
     categories = models.ManyToManyField(Category, verbose_name="分类", blank=True)

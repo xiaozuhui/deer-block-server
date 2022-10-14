@@ -40,7 +40,7 @@ class IssuesSerializer(serializers.ModelSerializer):
             "publisher": {"required": False, "allow_null": True},
             "medias": {"required": False, "allow_null": True},
             "status": {"required": False},
-            "content": {"required": False},
+            "content": {"required": False, "allow_null": True},
             "tags": {"required": False, "allow_null": True},
             "categories": {"required": False, "allow_null": True},
             "is_video_issues": {"required": False, "allow_null": True},
