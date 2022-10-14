@@ -22,7 +22,7 @@ class CanThumbUp(CanThumbUpBase):
         if not user:
             # 没有对应的用户，就不能创建
             raise BusinessError.ErrNoUser
-        tp = ThumbUp.create_instance(self, tper=user)
+        tp = ThumbUp.create_instance(self, user=user)
         return tp
 
     def delete_thumbs_up(self, user):
@@ -35,7 +35,7 @@ class CanThumbUp(CanThumbUpBase):
             BusinessError.ErrNoThumbUp: _description_
         """
         tp = ThumbUp.get_instances(self).filter(
-            tper__id=user.id).first()  # 如果不存在，则为[]
+            user__id=user.id).first()  # 如果不存在，则为[]
         if not tp:
             raise BusinessError.ErrNoThumbUp
         tp.delete()
@@ -50,7 +50,7 @@ class CanThumbUp(CanThumbUpBase):
             _type_: _description_
         """
         tp = ThumbUp.get_instances(self).filter(
-            tper__id=user.id).first()
+            user__id=user.id).first()
         return tp
 
     def get_thumb_ups(self):
