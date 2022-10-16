@@ -165,7 +165,7 @@ class IssuesViewSet(CustomViewBase):
                 tp = issues.create_thumbs_up(user)
                 self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.THUMBS_UP)
                 self.level_manager.inc_exp(issues.publisher.id, UpgradeUserLevelMethod.BE_THUMBS_UP)
-                send_thumbsub_message(user.id, issues.id)
+                send_thumbsub_message.delay(user.id, issues.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
             if not tp:
