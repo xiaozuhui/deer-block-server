@@ -108,7 +108,10 @@ class CommentViewSet(CustomViewBase):
                 ip = request.META.get("HTTP_X_FORWARDED_FOR")
             else:
                 ip = request.data.get('ip', None)
-            parent_comment_id = request.data.get("parent_comment_id", None)
+            if not comment.first_class_comment:
+                parent_comment_id = comment.id
+            else:
+                parent_comment_id = comment.first_class_comment.id
             if not parent_comment_id:
                 raise BusinessError.ErrParentCommentIDEmpty
             comment_ = comment.create_comment(user, content=content, medias=medias, ip=ip,
