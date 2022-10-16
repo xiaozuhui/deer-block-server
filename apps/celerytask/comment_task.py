@@ -34,12 +34,9 @@ def send_comment_message(self, user_id, issues_id, comment_id, *args, **kwargs):
             tl = TaskLog.init_entity(self.request.id, self.name, kwargs)
         tl.login = user
         tl.from_model = SourceType.COMMENT
-        res = AsyncResult(self.request.id)
-        tl.final_status = res.status
         tl.save()
     except Exception as e:
         logger.error("task log 保存失败....")
-        raise self.retry(exc=e)
     message = {
         "from_user_id": user.id,
         "to_user_id": to_user.id,

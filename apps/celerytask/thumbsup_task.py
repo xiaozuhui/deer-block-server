@@ -39,13 +39,9 @@ def send_thumbsub_message(self, user_id, issues_id, comment_id=None, *args, **kw
             tl = TaskLog.init_entity(self.request.id, self.name, kwargs)
         tl.login = user
         tl.from_model = SourceType.THUMB_UP
-        res = AsyncResult(self.request.id)
-        tl.final_status = res.status
         tl.save()
     except Exception as e:
         logger.error("task log 保存失败....")
-        raise self.retry(exc=e)
-
     log_str = f"{user.username} 对评论 {issues.title} 进行了点赞，消息发送至websocket"
     if comment_id:
         comment = Comment.logic_objects.filter(id=comment_id).first()
