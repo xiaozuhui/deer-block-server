@@ -78,7 +78,7 @@ class IssuesSerializer(serializers.ModelSerializer):
         if not user:
             return False
         tps = issues.get_thumb_up(user)
-        if tps and len(tps) == 1:
+        if tps:
             return True
         return False
 
@@ -90,7 +90,7 @@ class IssuesSerializer(serializers.ModelSerializer):
         if not user:
             return False
         colls = issues.get_collect(user)
-        if colls and len(colls) == 1:
+        if colls:
             return True
         return False
 
