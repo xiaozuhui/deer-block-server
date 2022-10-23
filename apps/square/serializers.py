@@ -70,6 +70,7 @@ class IssuesSerializer(serializers.ModelSerializer):
         """
         当前用户对于这个issues对象是否点赞
         """
+        logger.info(self.context)
         user_id = self.context.get('user_id', None)
         if not user_id:
             return False
