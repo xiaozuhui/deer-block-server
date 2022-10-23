@@ -98,7 +98,7 @@ class IssuesViewSet(CustomViewBase):
                     issues, data=data_, partial=partial, context={'user_id': request.user.id})
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
-                self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.ISSUES)
+                # self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.ISSUES)
                 send_issues_message.delay(user_id=user.id, issues_id=issues.id)
                 return JsonResponse(data=serializer.data, msg="OK", code=0, status=http.HTTPStatus.OK)
             else:
@@ -125,7 +125,7 @@ class IssuesViewSet(CustomViewBase):
         self.perform_create(serializer)
 
         issues_id = serializer.data.get("id")
-        self.level_manager.inc_exp(request.user.id, UpgradeUserLevelMethod.ISSUES)
+        # self.level_manager.inc_exp(request.user.id, UpgradeUserLevelMethod.ISSUES)
         send_issues_message.delay(user_id=request.user.id, issues_id=issues_id)
 
         headers = self.get_success_headers(serializer.data)
@@ -163,8 +163,8 @@ class IssuesViewSet(CustomViewBase):
         if request.method == 'POST':
             if not tp:
                 tp = issues.create_thumbs_up(user)
-                self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.THUMBS_UP)
-                self.level_manager.inc_exp(issues.publisher.id, UpgradeUserLevelMethod.BE_THUMBS_UP)
+                # self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.THUMBS_UP)
+                # self.level_manager.inc_exp(issues.publisher.id, UpgradeUserLevelMethod.BE_THUMBS_UP)
                 send_thumbsub_message.delay(user.id, issues.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
@@ -242,8 +242,8 @@ class IssuesViewSet(CustomViewBase):
             # issues的评论不需要parent_comment
             comment = issues.create_comment(user, content=content, medias=medias, ip=ip)
             # 需要给评论者和被评论者增加经验
-            self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.COMMENT)
-            self.level_manager.inc_exp(issues.publisher.id, UpgradeUserLevelMethod.BE_COMMENTED)
+            # self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.COMMENT)
+            # self.level_manager.inc_exp(issues.publisher.id, UpgradeUserLevelMethod.BE_COMMENTED)
             send_comment_message.delay(user_id=user.id, issues_id=issues.id, comment_id=comment.id)
             data = CommentSerializer(comment, context={'user_id': request.user.id}).data
         elif request.method == 'DELETE':

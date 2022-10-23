@@ -116,8 +116,8 @@ class CommentViewSet(CustomViewBase):
                 raise BusinessError.ErrParentCommentIDEmpty
             comment_ = comment.create_comment(user, content=content, medias=medias, ip=ip,
                                               parent_comment_id=parent_comment_id)
-            self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.COMMENT)
-            self.level_manager.inc_exp(comment.user.id, UpgradeUserLevelMethod.BE_COMMENTED)
+            # self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.COMMENT)
+            # self.level_manager.inc_exp(comment.user.id, UpgradeUserLevelMethod.BE_COMMENTED)
             send_comment_message.delay(user_id=user.id, issues_id=issues_id, comment_id=comment_.id,
                                        target_comment_id=comment.id)
             data = CommentSerializer(comment_, context={'user_id': request.user.id}).data
@@ -153,8 +153,8 @@ class CommentViewSet(CustomViewBase):
         if request.method == 'POST':
             if not tp:
                 tp = comment.create_thumbs_up(user)
-                self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.THUMBS_UP)
-                self.level_manager.inc_exp(comment.user.id, UpgradeUserLevelMethod.BE_THUMBS_UP)
+                # self.level_manager.inc_exp(user.id, UpgradeUserLevelMethod.THUMBS_UP)
+                # self.level_manager.inc_exp(comment.user.id, UpgradeUserLevelMethod.BE_THUMBS_UP)
                 send_thumbsub_message.delay(user.id, issues_id, comment.id)
             data = ThumbUpSerializer(tp).data
         elif request.method == 'DELETE':
