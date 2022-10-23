@@ -6,7 +6,7 @@ from django.db.models.signals import post_migrate
 
 from apps.consts import UpgradeUserLevelMethod
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 def _init_superuser(sender, *args, **kwargs):

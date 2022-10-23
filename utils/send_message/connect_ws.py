@@ -5,7 +5,7 @@ from websocket import create_connection
 
 from deer_block.settings import WS_URL
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class ConnectWebsocket:

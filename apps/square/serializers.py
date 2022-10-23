@@ -8,7 +8,7 @@ from .models import Issues
 from ..users.model2 import UserProfile
 from ..users.models import User
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 
 class IssuesSerializer(serializers.ModelSerializer):
@@ -97,7 +97,6 @@ class IssuesSerializer(serializers.ModelSerializer):
     def get_is_publisher_follow(self, issues):
         user_id = self.context.get('user_id', None)
         if not user_id:
-            logger.error("context上下文没有user_id")
             return False
         user = User.logic_objects.filter(id=user_id).first()
         if not user:

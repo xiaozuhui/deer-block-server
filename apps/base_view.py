@@ -54,22 +54,24 @@ class CustomViewBase(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True, context={'user': request.user})
+            serializer = self.get_serializer(page, many=True,
+                                             context={'user': request.user, "user_id": request.user.id})
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(queryset, many=True, context={'user': request.user})
+        serializer = self.get_serializer(queryset, many=True,
+                                         context={'user': request.user, "user_id": request.user.id})
         return JsonResponse(data=serializer.data, code=0, msg="OK", status=status_.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, context={'user': request.user})
+        serializer = self.get_serializer(instance, context={'user': request.user, "user_id": request.user.id})
         return JsonResponse(data=serializer.data, code=0, msg="OK", status=status_.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(
-            instance, data=request.data, partial=partial, context={'user': request.user})
+            instance, data=request.data, partial=partial, context={'user': request.user, "user_id": request.user.id})
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
