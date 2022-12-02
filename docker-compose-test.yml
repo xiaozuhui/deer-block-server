@@ -77,11 +77,11 @@ services:
 #      - CACHE_LOCATION_IP=redis
 #      - CACHE_LOCATION_PORT=6379
 #      # 短信发送
-#      - SEND_MESSAGE_ACCESS_KEY=LTAI5tKqWQhoEfRhyJKc15yW
-#      - SEND_MESSAGE_ACCESS_SECRET=FGhlSPqkSE7qmZksPUYya762j2AdaR
+#      - SEND_MESSAGE_ACCESS_KEY=
+#      - SEND_MESSAGE_ACCESS_SECRET=
 #      - SEND_MSG_MODE=aliyun
 #      - SIGN_NAME=阿里云短信测试
-#      - TEMPLATE_CODE=SMS_154950909
+#      - TEMPLATE_CODE=
 #      # minio
 #      # TODO 上线的时候需要修改
 #      - MINIO_IP=localhost
