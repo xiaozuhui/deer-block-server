@@ -1,4 +1,4 @@
-from apps.bussiness.models import Collection
+from apps.business.models import Collection
 from exceptions.custom_excptions.business_error import BusinessError
 
 

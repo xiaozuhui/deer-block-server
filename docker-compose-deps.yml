@@ -6,7 +6,7 @@ services:
     ports:
       - "15432:5432"
     volumes:
-      - /var/data/db:/var/lib/postgresql/data
+      - $HOME/data/db:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=123456
       - POSTGRES_USER=postgres
@@ -31,7 +31,7 @@ services:
       MINIO_ROOT_PASSWORD: 1qazXDR%?
       MINIO_PROMETHEUS_AUTH_TYPE: public
     volumes:
-      - /var/data/minio/data:/data #映射当前目录下的data目录至容器内/data目录
-      - /var/data/minio/config:/root/.minio/ #映射配置目录
+      - $HOME/data/minio/data:/data #映射当前目录下的data目录至容器内/data目录
+      - $HOME/data/minio/config:/root/.minio/ #映射配置目录
     privileged: true
     restart: always

@@ -1,4 +1,5 @@
 from enum import Enum
+
 from rest_framework.exceptions import APIException
 
 
@@ -10,14 +11,15 @@ class ErrorType(Enum):
     shop = 是用来标识商店相关的错误
     ISSUES = 是用来标识动态的错误
     """
-    CODE = "code"   # code类型的错误
-    SEND_MEG = "smg"    # 发送信息错误
+    CODE = "code"  # code类型的错误
+    SEND_MEG = "smg"  # 发送信息错误
     CACHE = "cache"  # 缓存相关的自定义错误
     SHOP = "shop"
     USER = "user"
     ISSUES = "issues"
     BUSINESS = "business"
     PARAMS = "params"
+    LEVEL = "level"
 
 
 class Level(Enum):
@@ -30,7 +32,8 @@ class CustomError(APIException):
     自定义异常的超类
     """
 
-    def __init__(self, error: str, err_code: str, error_type: ErrorType, message: str = "", params=None, level=Level.ERROR):
+    def __init__(self, error: str, err_code: str, error_type: ErrorType, message: str = "", params=None,
+                 level=Level.ERROR):
         super(CustomError, self).__init__()
         self.error = error
         self.error_code = err_code

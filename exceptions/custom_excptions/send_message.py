@@ -1,5 +1,6 @@
-from exceptions.custom_errors import CustomErrorEnum, ErrorType, CustomError
 from rest_framework.exceptions import APIException
+
+from exceptions.custom_errors import CustomErrorEnum, ErrorType, CustomError
 
 
 class SendMessageError(CustomErrorEnum, APIException):

@@ -1,11 +1,12 @@
 import random
 import string
+from typing import Tuple
 
 from apps.users.models import User
 from utils import consts
 
 
-def get_user_name(phone_number: str = "") -> str:
+def get_user_name(phone_number: str = "") -> Tuple[str, str]:
     """返回系统生成的用户名
 
     Args:
@@ -18,7 +19,8 @@ def get_user_name(phone_number: str = "") -> str:
     no = User.logic_objects.count() + 1
     mid_no = phone_number[-4:] if phone_number else str(random.random() * 1000)[:4]
     last = "".join(random.choices(consts.CHR, k=2)).upper()
-    return "用户 {}".format(first + str(no).rjust(4, '0') + mid_no + last)
+    user_code = first + str(no).rjust(4, '0') + mid_no + last
+    return "用户 {}".format(user_code), user_code
 
 
 def get_user_password(length=12):

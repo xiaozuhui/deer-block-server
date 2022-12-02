@@ -1,5 +1,6 @@
-from exceptions.custom_errors import CustomErrorEnum, ErrorType, CustomError, Level
 from rest_framework.exceptions import APIException
+
+from exceptions.custom_errors import CustomErrorEnum, ErrorType, CustomError, Level
 
 
 class UserError(CustomErrorEnum, APIException):

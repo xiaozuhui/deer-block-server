@@ -51,5 +51,5 @@ class FileStorageSerializer(serializers.ModelSerializer):
         minio_ip = os.environ.get("MINIO_IP", "localhost")
         minio_port = os.environ.get(
             "MINIO_PORT", "19090")  # 默认为19090端口，内部端口为9000
-        url = url.replace('minio', minio_ip).replace(':9000', ":"+minio_port)
+        url = url.replace('minio', minio_ip).replace(':9000', ":" + minio_port)
         return url

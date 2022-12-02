@@ -1,9 +1,8 @@
+from alibabacloud_dysmsapi20170525 import models as dysmsapi_models
 from alibabacloud_dysmsapi20170525.client import Client as DysmsapiClient
 from alibabacloud_tea_openapi import models as open_api_models
-from alibabacloud_dysmsapi20170525 import models as dysmsapi_models
 
 from deer_block.settings import ALI_SEND_CONFIG, SEND_MESSAGE_ACCESS_KEY, SEND_MESSAGE_ACCESS_SECRET
-from utils.base_tools import singleton
 
 
 class AliDysms:
@@ -57,7 +56,7 @@ class AliDysms:
             sign_name=sign_name,
             template_code=template_code,
             phone_numbers=phone_number,
-            template_param='{"code": "'+code+'"}'
+            template_param='{"code": "' + code + '"}'
         )
         # 复制代码运行请自行打印 API 的返回值
         res = self.client.send_sms(send_sms_request)

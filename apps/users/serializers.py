@@ -1,13 +1,12 @@
 from django.utils.text import gettext_lazy as _
 from rest_framework import serializers
-from . import models
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
+from . import models
 from .model2 import UserProfile
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     profile = serializers.SerializerMethodField()
 
     class Meta:
@@ -20,7 +19,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-
     phone_number = serializers.CharField(max_length=14, read_only=True)
     current_user_id = serializers.IntegerField(read_only=True)
     username = serializers.CharField(max_length=50, read_only=True)
