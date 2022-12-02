@@ -1,8 +1,18 @@
+<!--
+ * @Author: xiaozuhui
+ * @Date: 2022-12-02 10:07:49
+ * @LastEditors: xiaozuhui
+ * @LastEditTime: 2022-12-02 10:09:32
+ * @Description: 
+-->
 # deer-block-server
+
+原本打算和朋友做社区，但是现在项目荒废，直接公开
+只有后端
 
 ## 介绍
 
-鹿街社区后端
+xx社区后端
 
 - 广场社区
 - 交易商城
@@ -29,11 +39,11 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=15432
 CACHE_LOCATION_IP=localhost
 CACHE_LOCATION_PORT=16379
-SEND_MESSAGE_ACCESS_KEY=LTAI5tKqWQhoEfRhyJKc15yW
-SEND_MESSAGE_ACCESS_SECRET=FGhlSPqkSE7qmZksPUYya762j2AdaR
+SEND_MESSAGE_ACCESS_KEY=
+SEND_MESSAGE_ACCESS_SECRET=
 SEND_MSG_MODE=aliyun
 SIGN_NAME=阿里云短信测试
-TEMPLATE_CODE=SMS_154950909
+TEMPLATE_CODE=
 MINIO_IP=localhost
 MINIO_PORT=19090
 MINIO_SET_IP=localhost
